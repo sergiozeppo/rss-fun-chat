@@ -40,13 +40,12 @@ export function loginPage(): void {
 
 export function drawMain(): void {
   deleteItems();
-
   const main = createElement('main', ['main'], '', document.body);
   const header = createElement('header', ['header'], '', main);
   const headerInfo = createElement('article', ['header-info'], '', header);
   const userInfo = createElement('label', [], 'User: ', headerInfo);
   createElement('label', [], 'RSS FUN CHAT', headerInfo);
-  const infoButton = createElement('a', [], 'Info', header) as HTMLLinkElement;
+  const infoButton2 = createElement('a', [], 'Info', header) as HTMLLinkElement;
   const logoutButton = createElement('button', [], 'Logout', header);
 
   const content = createElement('section', ['main-content'], '', main);
@@ -68,24 +67,16 @@ export function drawMain(): void {
   console.log(userInfo, logoutButton, filterInput);
   console.log(dialogBox, dialogInput, dialogButton);
   console.log(userStatus, userLogin, opponent, userStatusText);
-
   const footer = createElement('footer', ['footer'], '', main);
   createElement('label', [], 'RSSchool', footer);
   createElement('label', [], 'sergiozeppo', footer);
   createElement('label', [], '2024', footer);
 
-  loginInput.type = 'text';
-  loginInput.placeholder = 'Логин';
-  passwordInput.type = 'password';
-  passwordInput.placeholder = 'Пароль';
-  loginButton.textContent = 'Войти';
-
-  infoButton.href = '#about';
-  infoButton.addEventListener('click', () => {
+  infoButton2.href = '#about';
+  infoButton2.addEventListener('click', () => {
     deleteItems();
     about();
   });
-  // document.body.appendChild(form);
 }
 
 function about(): void {
