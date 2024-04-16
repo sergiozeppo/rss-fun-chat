@@ -1,5 +1,5 @@
 import { createElement } from '../../core/functions';
-import { ValidationError } from '../../core/types';
+import { ServerStatus, ValidationError } from '../../core/types';
 
 export function deleteItems(): void {
   const delMain = document.querySelector('.main');
@@ -18,26 +18,30 @@ const infoButton = document.createElement('a');
 
 export function loginPage(): void {
   deleteItems();
+  if (sessionStorage.sergioUser) {
+    navigate();
+  } else {
+    loginInput.type = 'text';
+    loginInput.placeholder = 'Логин';
+    loginInput.pattern = '^[A-Z][\\-a-zA-z]{2,}$';
+    passwordInput.type = 'password';
+    passwordInput.placeholder = 'Пароль';
+    passwordInput.pattern = '^[A-Z][\\-a-zA-z]{3,}$';
+    loginButton.textContent = 'Войти';
+    loginButton.disabled = true;
+    infoButton.textContent = 'Инфо';
 
-  loginInput.type = 'text';
-  loginInput.placeholder = 'Логин';
-  loginInput.pattern = '^[A-Z][\\-a-zA-z]{2,}$';
-  passwordInput.type = 'password';
-  passwordInput.placeholder = 'Пароль';
-  passwordInput.pattern = '^[A-Z][\\-a-zA-z]{3,}$';
-  loginButton.textContent = 'Войти';
-  infoButton.textContent = 'Инфо';
-
-  form.appendChild(loginInput);
-  form.appendChild(passwordInput);
-  form.appendChild(loginButton);
-  form.appendChild(infoButton);
-  infoButton.href = '#about';
-  infoButton.addEventListener('click', () => {
-    deleteItems();
-    aboutPage();
-  });
-  document.body.appendChild(form);
+    form.appendChild(loginInput);
+    form.appendChild(passwordInput);
+    form.appendChild(loginButton);
+    form.appendChild(infoButton);
+    infoButton.href = '#about';
+    infoButton.addEventListener('click', () => {
+      deleteItems();
+      aboutPage();
+    });
+    document.body.appendChild(form);
+  }
 }
 
 function checkDisableButton(): void {
@@ -163,6 +167,24 @@ ws.onopen = (): void => {
   console.log('Hello WS!');
   form.addEventListener('submit', (e): void => {
     e.preventDefault();
+    const user = {
+      name: loginInput.value,
+      surname: passwordInput.value,
+    };
+    sessionStorage.setItem('sergioUser', JSON.stringify(user));
+    const msg = {
+      id: 'allls',
+      type: ServerStatus.USER_LOGIN,
+      payload: {
+        user: {
+          login: user.name,
+          password: user.surname,
+        },
+      },
+    };
+
+    ws.send(JSON.stringify(msg));
+    console.log(ws.readyState);
 
     window.location.hash = '#main';
     mainPage();
