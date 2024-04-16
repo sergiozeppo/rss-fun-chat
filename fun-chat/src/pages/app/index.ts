@@ -1,5 +1,5 @@
 import { createElement } from '../../core/functions';
-import { ServerStatus } from '../../core/types';
+import { ValidationError } from '../../core/types';
 
 export function deleteItems(): void {
   const delMain = document.querySelector('.main');
@@ -21,8 +21,10 @@ export function loginPage(): void {
 
   loginInput.type = 'text';
   loginInput.placeholder = 'Логин';
+  loginInput.pattern = '^[A-Z][\\-a-zA-z]{2,}$';
   passwordInput.type = 'password';
   passwordInput.placeholder = 'Пароль';
+  passwordInput.pattern = '^[A-Z][\\-a-zA-z]{3,}$';
   loginButton.textContent = 'Войти';
   infoButton.textContent = 'Инфо';
 
@@ -33,12 +35,65 @@ export function loginPage(): void {
   infoButton.href = '#about';
   infoButton.addEventListener('click', () => {
     deleteItems();
-    about();
+    aboutPage();
   });
   document.body.appendChild(form);
 }
 
-export function drawMain(): void {
+function checkDisableButton(): void {
+  if (loginInput.value === '' || passwordInput.value === '') {
+    loginButton.disabled = true;
+  } else loginButton.disabled = false;
+}
+
+function validateError(dest: HTMLInputElement, input: string): void {
+  const nameError = new ValidationError(input);
+  dest.insertAdjacentHTML('afterend', `<p class="error-message">${nameError.message}</p>`);
+  setTimeout(() => {
+    const deleteError = document.querySelector('.error-message');
+    form?.removeChild(deleteError as Node);
+  }, 3000);
+  loginButton.disabled = true;
+}
+
+function checkName(): void {
+  if (!loginInput.value) validateError(loginInput, `Please, enter ${loginInput.placeholder}`);
+  if (loginInput.validity.tooShort) {
+    const min = loginInput.getAttribute('minLength');
+    validateError(loginInput, `The minimum length should be ${min}`);
+  }
+  if (!loginInput.value.match(/^[A-Z]/g))
+    validateError(loginInput, `First letter should be capital`);
+  if (!loginInput.value.match(/[a-zA-z]/g))
+    validateError(loginInput, `Only latin letters and hyphen allowed`);
+  checkDisableButton();
+}
+
+function checkSurname(): void {
+  if (!passwordInput.value) validateError(passwordInput, `Please, enter ${loginInput.placeholder}`);
+  if (passwordInput.validity.tooShort) {
+    const min = passwordInput.getAttribute('minLength');
+    validateError(passwordInput, `The minimum length should be ${min}`);
+  }
+  if (!passwordInput.value.match(/^[A-Z]/g))
+    validateError(passwordInput, `First letter should be capital`);
+  if (!passwordInput.value.match(/[a-zA-z]/g))
+    validateError(passwordInput, `Only latin letters and hyphen allowed`);
+  checkDisableButton();
+}
+
+form.addEventListener('keyup', checkDisableButton);
+loginInput.addEventListener('focusout', checkName);
+passwordInput.addEventListener('focusout', checkSurname);
+
+function drawFooter(div: HTMLElement): void {
+  const footer = createElement('footer', ['footer'], '', div);
+  createElement('label', [], 'RSSchool', footer);
+  createElement('label', [], 'sergiozeppo', footer);
+  createElement('label', [], '2024', footer);
+}
+
+export function mainPage(): void {
   deleteItems();
   const main = createElement('main', ['main'], '', document.body);
   const header = createElement('header', ['header'], '', main);
@@ -67,19 +122,16 @@ export function drawMain(): void {
   console.log(userInfo, logoutButton, filterInput);
   console.log(dialogBox, dialogInput, dialogButton);
   console.log(userStatus, userLogin, opponent, userStatusText);
-  const footer = createElement('footer', ['footer'], '', main);
-  createElement('label', [], 'RSSchool', footer);
-  createElement('label', [], 'sergiozeppo', footer);
-  createElement('label', [], '2024', footer);
+  drawFooter(main);
 
   infoButton2.href = '#about';
   infoButton2.addEventListener('click', () => {
     deleteItems();
-    about();
+    aboutPage();
   });
 }
 
-function about(): void {
+function aboutPage(): void {
   deleteItems();
   const div = createElement('main', ['about']);
   createElement('h3', ['about-title'], 'Fun chat', div);
@@ -111,35 +163,23 @@ ws.onopen = (): void => {
   console.log('Hello WS!');
   form.addEventListener('submit', (e): void => {
     e.preventDefault();
-    window.location.hash = '#main';
-    drawMain();
-  });
-  const msg = {
-    id: 'allls',
-    type: ServerStatus.USER_LOGIN,
-    payload: {
-      user: {
-        login: 'balbes',
-        password: 'balbes',
-      },
-    },
-  };
 
-  ws.send(JSON.stringify(msg));
-  console.log(ws.readyState);
+    window.location.hash = '#main';
+    mainPage();
+  });
 };
 
-ws.onmessage = (data): void => {
-  console.log(data);
+ws.onmessage = (messaga): void => {
+  console.log(messaga.data);
 };
 
 export function navigate(): void {
   if (window.location.hash === '#login') {
     loginPage();
   } else if (window.location.hash === '#about') {
-    about();
+    aboutPage();
   } else if (window.location.hash === '#main') {
-    drawMain();
+    mainPage();
   }
 }
 
