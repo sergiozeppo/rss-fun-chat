@@ -1,5 +1,5 @@
 import { createElement } from '../../core/functions';
-import { ServerStatus, ValidationError } from '../../core/types';
+import { ServerStatus, User, ValidationError } from '../../core/types';
 
 export function deleteItems(): void {
   const delMain = document.querySelector('.main');
@@ -129,9 +129,19 @@ export function mainPage(): void {
   drawFooter(main);
 
   infoButton2.href = '#about';
-  infoButton2.addEventListener('click', () => {
+  buttonListenersSetup(infoButton2, logoutButton);
+}
+
+function buttonListenersSetup(link: HTMLLinkElement, button: HTMLElement): void {
+  link.addEventListener('click', () => {
     deleteItems();
     aboutPage();
+  });
+  button.addEventListener('click', () => {
+    logout();
+    deleteItems();
+    window.location.hash = '#login';
+    navigate();
   });
 }
 
@@ -154,7 +164,11 @@ function aboutPage(): void {
   const link = createElement('a', ['ass'], 'Автор sergiozeppo', div) as HTMLLinkElement;
   link.href = 'https://github.com/sergiozeppo';
   const back = createElement('a', ['ass'], 'Вернуться назад', div) as HTMLLinkElement;
-  back.href = '#login';
+  if (sessionStorage.sergioUser) {
+    back.href = '#main';
+  } else {
+    back.href = '#login';
+  }
   back.addEventListener('click', () => {
     deleteItems();
   });
@@ -168,8 +182,8 @@ ws.onopen = (): void => {
   form.addEventListener('submit', (e): void => {
     e.preventDefault();
     const user = {
-      name: loginInput.value,
-      surname: passwordInput.value,
+      login: loginInput.value,
+      password: passwordInput.value,
     };
     sessionStorage.setItem('sergioUser', JSON.stringify(user));
     const msg = {
@@ -177,8 +191,8 @@ ws.onopen = (): void => {
       type: ServerStatus.USER_LOGIN,
       payload: {
         user: {
-          login: user.name,
-          password: user.surname,
+          login: user.login,
+          password: user.password,
         },
       },
     };
@@ -195,6 +209,25 @@ ws.onmessage = (messaga): void => {
   console.log(messaga.data);
 };
 
+function logout(): void {
+  if (sessionStorage.sergioUser) {
+    const delUser: User = JSON.parse(sessionStorage.sergioUser);
+    console.log(delUser);
+    const delMessage = {
+      id: 'allls',
+      type: ServerStatus.USER_LOGOUT,
+      payload: {
+        user: {
+          login: `${delUser.password}`,
+          password: `${delUser.password}`,
+        },
+      },
+    };
+    console.log(delMessage);
+    ws.send(JSON.stringify(delMessage));
+  }
+  delete sessionStorage.sergioUser;
+}
 export function navigate(): void {
   if (window.location.hash === '#login') {
     loginPage();
