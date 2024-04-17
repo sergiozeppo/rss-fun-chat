@@ -1,5 +1,6 @@
 import { createElement } from '../../core/functions';
 import { ServerStatus, User, ValidationError } from '../../core/types';
+import { ws } from '../../core/api';
 
 export function deleteItems(): void {
   const delMain = document.querySelector('.main');
@@ -175,34 +176,84 @@ function aboutPage(): void {
   document.body.appendChild(div);
 }
 
-const URL: string = 'ws://127.0.0.1:4000/';
-const ws = new WebSocket(URL);
+// const URL: string = 'ws://127.0.0.1:4000/';
+// var ws: WebSocket;
+
+// function retrieveActiveUsers(
+//   payload: {
+//     users: UserIsLogined[];
+//   } | null
+// ) {
+//   if (payload?.users) {
+//     const userlist = payload.users;
+//   }
+// }
+
+const usersActive = {
+  id: null,
+  type: ServerStatus.USER_ACTIVE,
+  payload: null,
+};
+
+const usersInActive = {
+  id: null,
+  type: ServerStatus.USER_INACTIVE,
+  payload: null,
+};
+
+form.addEventListener('submit', (e): void => {
+  e.preventDefault();
+  const user = {
+    login: loginInput.value,
+    password: passwordInput.value,
+  };
+  sessionStorage.setItem('sergioUser', JSON.stringify(user));
+  const msg = {
+    id: 'allls',
+    type: ServerStatus.USER_LOGIN,
+    payload: {
+      user: {
+        login: user.login,
+        password: user.password,
+      },
+    },
+  };
+
+  ws.send(JSON.stringify(msg));
+  ws.send(JSON.stringify(usersActive));
+  ws.send(JSON.stringify(usersInActive));
+  console.log(ws.readyState);
+
+  window.location.hash = '#main';
+  mainPage();
+});
+
 ws.onopen = (): void => {
   console.log('Hello WS!');
-  form.addEventListener('submit', (e): void => {
-    e.preventDefault();
-    const user = {
-      login: loginInput.value,
-      password: passwordInput.value,
-    };
-    sessionStorage.setItem('sergioUser', JSON.stringify(user));
-    const msg = {
-      id: 'allls',
-      type: ServerStatus.USER_LOGIN,
-      payload: {
-        user: {
-          login: user.login,
-          password: user.password,
-        },
-      },
-    };
+  // form.addEventListener('submit', (e): void => {
+  //   e.preventDefault();
+  //   const user = {
+  //     login: loginInput.value,
+  //     password: passwordInput.value,
+  //   };
+  //   sessionStorage.setItem('sergioUser', JSON.stringify(user));
+  //   const msg = {
+  //     id: 'allls',
+  //     type: ServerStatus.USER_LOGIN,
+  //     payload: {
+  //       user: {
+  //         login: user.login,
+  //         password: user.password,
+  //       },
+  //     },
+  //   };
 
-    ws.send(JSON.stringify(msg));
-    console.log(ws.readyState);
+  //   ws.send(JSON.stringify(msg));
+  //   console.log(ws.readyState);
 
-    window.location.hash = '#main';
-    mainPage();
-  });
+  //   window.location.hash = '#main';
+  //   mainPage();
+  // });
 };
 
 ws.onmessage = (messaga): void => {
@@ -230,11 +281,17 @@ function logout(): void {
 }
 export function navigate(): void {
   if (window.location.hash === '#login') {
-    loginPage();
+    if (sessionStorage.sergioUser) {
+      window.location.hash = '#main';
+      mainPage();
+    } else loginPage();
   } else if (window.location.hash === '#about') {
     aboutPage();
   } else if (window.location.hash === '#main') {
-    mainPage();
+    if (!sessionStorage.sergioUser) {
+      window.location.hash = '#login';
+      loginPage();
+    } else mainPage();
   }
 }
 
