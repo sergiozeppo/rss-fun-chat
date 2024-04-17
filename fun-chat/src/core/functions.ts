@@ -14,7 +14,7 @@ export function createElement(
       element.classList.add(...classes);
     }
   }
-  if (parent != null) {
+  if (parent) {
     parent.appendChild(element);
   }
   return element;
@@ -43,4 +43,11 @@ export function classListHandle(
     el.textContent = text;
   }
   return el;
+}
+
+export function generateID(): string {
+  const radix = 36;
+  const min = 2;
+  const max = 9;
+  return Math.random().toString(radix).substring(min, max);
 }
