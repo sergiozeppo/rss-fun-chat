@@ -1,4 +1,4 @@
-import { createElement } from '../../core/functions';
+import { createElement, generateID } from '../../core/functions';
 import { ServerStatus, User, ValidationError } from '../../core/types';
 import { ws } from '../../core/api';
 
@@ -112,9 +112,6 @@ export function mainPage(): void {
   const userAsideBlock = createElement('aside', ['aside-section'], '', content);
   const filterInput = createElement('input', ['search'], '', userAsideBlock);
   const userList = createElement('ul', ['user-list'], '', userAsideBlock);
-  const userItem = createElement('li', ['user-list-item'], '', userList);
-  const userStatus = createElement('div', ['user-status'], '', userItem);
-  const userLogin = createElement('label', ['user-login'], '', userItem);
 
   const dialogBlock = createElement('article', ['dialog-container'], '', content);
   const dialogHeader = createElement('article', ['dialog-header'], '', dialogBlock);
@@ -126,7 +123,7 @@ export function mainPage(): void {
   const dialogButton = createElement('button', ['dialog-button'], 'Send', dialogForm);
   console.log(userInfo, logoutButton, filterInput);
   console.log(dialogBox, dialogInput, dialogButton);
-  console.log(userStatus, userLogin, opponent, userStatusText);
+  console.log(userList, opponent, userStatusText);
   drawFooter(main);
 
   infoButton2.href = '#about';
@@ -176,19 +173,6 @@ function aboutPage(): void {
   document.body.appendChild(div);
 }
 
-// const URL: string = 'ws://127.0.0.1:4000/';
-// var ws: WebSocket;
-
-// function retrieveActiveUsers(
-//   payload: {
-//     users: UserIsLogined[];
-//   } | null
-// ) {
-//   if (payload?.users) {
-//     const userlist = payload.users;
-//   }
-// }
-
 const usersActive = {
   id: null,
   type: ServerStatus.USER_ACTIVE,
@@ -208,8 +192,9 @@ form.addEventListener('submit', (e): void => {
     password: passwordInput.value,
   };
   sessionStorage.setItem('sergioUser', JSON.stringify(user));
+  const reqID = generateID();
   const msg = {
-    id: 'allls',
+    id: reqID,
     type: ServerStatus.USER_LOGIN,
     payload: {
       user: {
@@ -227,38 +212,6 @@ form.addEventListener('submit', (e): void => {
   window.location.hash = '#main';
   mainPage();
 });
-
-ws.onopen = (): void => {
-  console.log('Hello WS!');
-  // form.addEventListener('submit', (e): void => {
-  //   e.preventDefault();
-  //   const user = {
-  //     login: loginInput.value,
-  //     password: passwordInput.value,
-  //   };
-  //   sessionStorage.setItem('sergioUser', JSON.stringify(user));
-  //   const msg = {
-  //     id: 'allls',
-  //     type: ServerStatus.USER_LOGIN,
-  //     payload: {
-  //       user: {
-  //         login: user.login,
-  //         password: user.password,
-  //       },
-  //     },
-  //   };
-
-  //   ws.send(JSON.stringify(msg));
-  //   console.log(ws.readyState);
-
-  //   window.location.hash = '#main';
-  //   mainPage();
-  // });
-};
-
-ws.onmessage = (messaga): void => {
-  console.log(messaga.data);
-};
 
 function logout(): void {
   if (sessionStorage.sergioUser) {
