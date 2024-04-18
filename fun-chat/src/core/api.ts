@@ -42,7 +42,7 @@ function autoLogin(): void {
 window.onload = (): void => {
   ws.onopen = (): void => {
     autoLogin();
-    console.log('Соединение установлено');
+    console.log('Connection established');
     ws.send(JSON.stringify(usersActive));
     ws.send(JSON.stringify(usersInActive));
   };
@@ -59,10 +59,10 @@ window.onload = (): void => {
       retrieveActiveUsers(payload);
     }
     if (type === ServerStatus.USER_EXTERNAL_LOGIN) {
-      retrieveActiveUsers(payload);
+      appendExternalUsers(payload);
     }
     if (type === ServerStatus.USER_EXTERNAL_LOGOUT) {
-      retrieveActiveUsers(payload);
+      appendExternalUsers(payload);
     }
   };
 
@@ -72,9 +72,9 @@ window.onload = (): void => {
 
   ws.onclose = (event): void => {
     if (event.wasClean) {
-      console.log('Соединение закрыто чисто');
+      console.log('Connection closed cleanly');
     } else {
-      console.log('Обрыв соединения'); // например, "убит" процесс сервера
+      console.log('Connection died');
     }
     console.log(event.code + event.reason);
   };
@@ -97,6 +97,27 @@ function retrieveActiveUsers(payload: { users: UserIsLogined[] }): void {
         liLogin.textContent = flUser.login;
         ul.append(li);
       });
+    }
+  }
+}
+
+function appendExternalUsers(payload: { user: UserIsLogined }): void {
+  if (sessionStorage.sergioUser) {
+    if (payload?.user) {
+      const userItem = payload.user;
+      const ul = document.querySelector('.user-list') as HTMLElement;
+      const oldUserAppend = ul.querySelector(`li[data-login=${userItem.login}]`) as HTMLElement;
+      console.log(oldUserAppend);
+      oldUserAppend?.remove();
+
+      const li = createElement('li', ['user-list-item'], '');
+      const liStat = createElement('div', ['user-status'], '', li);
+      const liLogin = createElement('label', ['user-login'], '', li);
+      li.setAttribute('data-login', userItem.login);
+      if (userItem.isLogined) classListHandle(liStat, ['active']);
+      liLogin.textContent = userItem.login;
+      if (userItem.isLogined) ul.prepend(li);
+      else ul.append(li);
     }
   }
 }
