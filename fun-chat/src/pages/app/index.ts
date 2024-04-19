@@ -153,7 +153,7 @@ function buttonListenersSetup(
   });
 }
 
-function sendText() {
+function sendText(): void {
   const dialogInpitToText = document.querySelector('.dialog-input-field') as HTMLInputElement;
   if (dialogInpitToText.value !== '') {
     const dialogHeaderToText = document.querySelector('.dialog-header') as HTMLElement;

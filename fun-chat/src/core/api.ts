@@ -3,7 +3,7 @@ import { ServerStatus, UserIsLogined, Message } from './types';
 
 const URLstr: string = 'ws://127.0.0.1:4000/';
 export const ws = new WebSocket(URLstr);
-let OPPONENT_USER: string;
+// let OPPONENT_USER: string;
 let CURRENT_USER: string;
 
 const usersActive = {
@@ -48,7 +48,6 @@ window.onload = (): void => {
     ws.send(JSON.stringify(usersActive));
     ws.send(JSON.stringify(usersInActive));
   };
-
   ws.onmessage = (event): void => {
     const gdata = JSON.parse(event.data);
     const { payload, type } = gdata;
@@ -70,11 +69,9 @@ window.onload = (): void => {
       drawMessages(payload);
     }
   };
-
   ws.onerror = (error): void => {
     if (error instanceof Error) console.log(error.message);
   };
-
   ws.onclose = (event): void => {
     if (event.wasClean) {
       console.log('Connection closed cleanly');
@@ -174,14 +171,10 @@ function drawMessages(payload: { messages: Message[] }): void {
     createElement('div', ['message-text'], `${textObj.text}`, messageInDiv);
     const messageFooter = createElement('div', ['message-footer'], '', messageInDiv);
     createElement('label', [], `${textObj.status.isEdited ? `edited` : ''}`, messageFooter);
-    createElement(
-      'label',
-      [],
-      `${textObj.status.isReaded ? `read` : textObj.status.isDelivered ? `delivered` : `sended`}`,
-      messageFooter
-    );
+    createElement('label', [], ``, messageFooter);
   });
 }
+// ${textObj.status.isReaded ? `read` : textObj.status.isDelivered ? `delivered` : `sended`}
 
 function chooseUser(e: Event): void {
   if (e) {
@@ -208,7 +201,7 @@ function chooseUser(e: Event): void {
     // : classListHandle(dialogUserStatus, ['user-active-text'], ['user-inactive-text'], 'Online');
     // dialogUserFlag = !currentUserStatus ? false : true;
     dialogUser.textContent = currentUserLogin.textContent;
-    OPPONENT_USER = currentUserLogin.textContent as string;
+    // OPPONENT_USER = currentUserLogin.textContent as string;
     dialogHeader.setAttribute('data-opp', currentUserLogin.textContent as string);
 
     const dialogInput = document.querySelector('.dialog-input-field') as HTMLInputElement;
