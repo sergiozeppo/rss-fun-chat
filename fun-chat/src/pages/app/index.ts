@@ -103,7 +103,9 @@ export function mainPage(): void {
   const main = createElement('main', ['main'], '', document.body);
   const header = createElement('header', ['header'], '', main);
   const headerInfo = createElement('article', ['header-info'], '', header);
-  const userInfo = createElement('label', [], 'User: ', headerInfo);
+  const userInfo = createElement('label', [], '', headerInfo);
+  if (sessionStorage.sergioCurrentUser)
+    userInfo.textContent = `User: ${JSON.parse(sessionStorage.sergioCurrentUser)}`;
   createElement('label', [], 'RSS FUN CHAT', headerInfo);
   const infoButton2 = createElement('a', [], 'Info', header) as HTMLLinkElement;
   const logoutButton = createElement('button', [], 'Logout', header);
@@ -115,22 +117,27 @@ export function mainPage(): void {
 
   const dialogBlock = createElement('article', ['dialog-container'], '', content);
   const dialogHeader = createElement('article', ['dialog-header'], '', dialogBlock);
-  const opponent = createElement('label', [], 'User: ', dialogHeader);
-  const userStatusText = createElement('label', ['user-active-text'], 'В', dialogHeader);
+  const opponent = createElement('label', [], '', dialogHeader);
+  const userStatusText = createElement('label', ['user-text'], '', dialogHeader);
   const dialogBox = createElement('article', ['dialog-box'], '', dialogBlock);
   const dialogForm = createElement('form', ['dialog-input'], '', dialogBlock);
   const dialogInput = createElement('input', ['dialog-input-field'], '', dialogForm);
   const dialogButton = createElement('button', ['dialog-button'], 'Send', dialogForm);
+  (dialogInput as HTMLInputElement).disabled = true;
+  (dialogButton as HTMLButtonElement).disabled = true;
   console.log(userInfo, logoutButton, filterInput);
-  console.log(dialogBox, dialogInput, dialogButton);
-  console.log(userList, opponent, userStatusText);
+  console.log(dialogBox, userList, opponent, userStatusText);
   drawFooter(main);
 
   infoButton2.href = '#about';
-  buttonListenersSetup(infoButton2, logoutButton);
+  buttonListenersSetup(infoButton2, logoutButton, dialogButton);
 }
 
-function buttonListenersSetup(link: HTMLLinkElement, button: HTMLElement): void {
+function buttonListenersSetup(
+  link: HTMLLinkElement,
+  button: HTMLElement,
+  submit: HTMLElement
+): void {
   link.addEventListener('click', () => {
     deleteItems();
     aboutPage();
@@ -141,6 +148,32 @@ function buttonListenersSetup(link: HTMLLinkElement, button: HTMLElement): void 
     window.location.hash = '#login';
     navigate();
   });
+  submit.addEventListener('click', () => {
+    sendText();
+  });
+}
+
+function sendText() {
+  const dialogInpitToText = document.querySelector('.dialog-input-field') as HTMLInputElement;
+  if (dialogInpitToText.value !== '') {
+    const dialogHeaderToText = document.querySelector('.dialog-header') as HTMLElement;
+    const dialogUserToText = dialogHeaderToText.querySelector('label') as HTMLElement;
+    if (dialogUserToText.textContent) {
+      const sendID = generateID();
+      const sendMessage = {
+        id: sendID,
+        type: ServerStatus.MSG_SEND,
+        payload: {
+          message: {
+            to: dialogUserToText.textContent,
+            text: dialogInpitToText.value,
+          },
+        },
+      };
+      console.log(sendMessage);
+      ws.send(JSON.stringify(sendMessage));
+    }
+  }
 }
 
 function aboutPage(): void {
@@ -192,6 +225,7 @@ form.addEventListener('submit', (e): void => {
     password: passwordInput.value,
   };
   sessionStorage.setItem('sergioUser', JSON.stringify(user));
+  sessionStorage.setItem('sergioCurrentUser', JSON.stringify(loginInput.value));
   const reqID = generateID();
   const msg = {
     id: reqID,
@@ -203,7 +237,6 @@ form.addEventListener('submit', (e): void => {
       },
     },
   };
-
   ws.send(JSON.stringify(msg));
   ws.send(JSON.stringify(usersActive));
   ws.send(JSON.stringify(usersInActive));

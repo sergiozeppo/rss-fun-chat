@@ -11,6 +11,7 @@ export enum ServerStatus {
   MSG_READ = 'MSG_READ',
   MSG_DELETE = 'MSG_DELETE',
   MSG_EDIT = 'MSG_EDIT',
+  MSG_FROM_USER = 'MSG_FROM_USER',
 }
 
 export type User = {
@@ -69,6 +70,19 @@ export type UserInactive = {
   payload: {
     users: UserIsLogined[];
   } | null;
+};
+
+export type Message = {
+  id: string;
+  from: string;
+  to: string;
+  text: string;
+  datetime: number;
+  status: {
+    isDelivered: boolean;
+    isReaded: boolean;
+    isEdited: boolean;
+  };
 };
 
 export class ValidationError extends Error {
