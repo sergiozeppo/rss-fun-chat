@@ -142,37 +142,56 @@ function appendExternalUsers(payload: { user: UserIsLogined }): void {
   }
 }
 
+function clearOldMessages(box: HTMLElement): void {
+  const removeOldMsgs = box.querySelectorAll('.message-container');
+  removeOldMsgs.forEach((old) => {
+    old.remove();
+  });
+}
+
+function createFirstGreeting(box: HTMLElement): void {
+  createElement(
+    'div',
+    ['dialog-first'],
+    'Write first to start your unforgettable communication...',
+    box
+  );
+}
+
 function drawMessages(payload: { messages: Message[] }): void {
   if (sessionStorage.sergioCurrentUser) {
     CURRENT_USER = JSON.parse(sessionStorage.sergioCurrentUser);
   }
   const box = document.querySelector('.dialog-box') as HTMLElement;
-  const removeOldMsgs = box.querySelectorAll('.message-container');
-  removeOldMsgs.forEach((old) => {
-    old.remove();
-  });
-  payload.messages.forEach((textObj) => {
-    console.log(textObj.text);
-    const messageDiv = createElement(
-      'div',
-      ['message-container', `${textObj.from === CURRENT_USER ? `current` : `opponent`}`],
-      '',
-      box
-    );
-    const messageInDiv = createElement('div', ['message'], '', messageDiv);
-    const messageHeader = createElement('div', ['message-header'], '', messageInDiv);
-    createElement(
-      'label',
-      [],
-      `${textObj.from === CURRENT_USER ? `You` : `${textObj.from}`}`,
-      messageHeader
-    );
-    createElement('label', [], `${getMessageDate(new Date(textObj.datetime))}`, messageHeader);
-    createElement('div', ['message-text'], `${textObj.text}`, messageInDiv);
-    const messageFooter = createElement('div', ['message-footer'], '', messageInDiv);
-    createElement('label', [], `${textObj.status.isEdited ? `edited` : ''}`, messageFooter);
-    createElement('label', [], ``, messageFooter);
-  });
+  clearOldMessages(box);
+  if (payload.messages.length === 0) {
+    createFirstGreeting(box);
+  } else {
+    const delFirst = document.querySelector('.dialog-first');
+    if (delFirst) delFirst.remove();
+    payload.messages.forEach((textObj) => {
+      console.log(textObj.text);
+      const messageDiv = createElement(
+        'div',
+        ['message-container', `${textObj.from === CURRENT_USER ? `current` : `opponent`}`],
+        '',
+        box
+      );
+      const messageInDiv = createElement('div', ['message'], '', messageDiv);
+      const messageHeader = createElement('div', ['message-header'], '', messageInDiv);
+      createElement(
+        'label',
+        [],
+        `${textObj.from === CURRENT_USER ? `You` : `${textObj.from}`}`,
+        messageHeader
+      );
+      createElement('label', [], `${getMessageDate(new Date(textObj.datetime))}`, messageHeader);
+      createElement('div', ['message-text'], `${textObj.text}`, messageInDiv);
+      const messageFooter = createElement('div', ['message-footer'], '', messageInDiv);
+      createElement('label', [], `${textObj.status.isEdited ? `edited` : ''}`, messageFooter);
+      createElement('label', [], ``, messageFooter);
+    });
+  }
 }
 // ${textObj.status.isReaded ? `read` : textObj.status.isDelivered ? `delivered` : `sended`}
 
@@ -212,7 +231,7 @@ function chooseUser(e: Event): void {
   }
 }
 
-function fetchMessages(userToFetch: string): void {
+export function fetchMessages(userToFetch: string): void {
   const fetchID = generateID();
   const fetchMessage = {
     id: fetchID,

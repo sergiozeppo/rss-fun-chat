@@ -1,6 +1,6 @@
 import { createElement, generateID } from '../../core/functions';
 import { ServerStatus, User, ValidationError } from '../../core/types';
-import { ws } from '../../core/api';
+import { ws, fetchMessages } from '../../core/api';
 
 export function deleteItems(): void {
   const delMain = document.querySelector('.main');
@@ -172,6 +172,8 @@ function sendText(): void {
       };
       console.log(sendMessage);
       ws.send(JSON.stringify(sendMessage));
+      dialogInpitToText.value = '';
+      fetchMessages(dialogUserToText.textContent);
     }
   }
 }
