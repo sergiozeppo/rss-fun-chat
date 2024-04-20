@@ -167,6 +167,16 @@ function deleteFirstGreeting(): void {
   if (delFirst) delFirst.remove();
 }
 
+function drawDelivery(textObj: Message): string {
+  let result: string;
+  if (textObj.status.isReaded) {
+    result = `read`;
+  } else if (textObj.status.isDelivered) {
+    result = `delivered`;
+  } else result = `sent`;
+  return result;
+}
+
 function drawMessages(payload: { messages: Message[] }): void {
   if (sessionStorage.sergioCurrentUser) {
     CURRENT_USER = JSON.parse(sessionStorage.sergioCurrentUser);
@@ -191,14 +201,14 @@ function drawMessages(payload: { messages: Message[] }): void {
       createElement(
         'label',
         [],
-        `${textObj.from === CURRENT_USER ? `You` : `${textObj.from}`}`,
+        `${textObj.from === CURRENT_USER ? `${CURRENT_USER} (You)` : `${textObj.from}`}`,
         messageHeader
       );
       createElement('label', [], `${getMessageDate(new Date(textObj.datetime))}`, messageHeader);
       createElement('div', ['message-text'], `${textObj.text}`, messageInDiv);
       const messageFooter = createElement('div', ['message-footer'], '', messageInDiv);
       createElement('label', [], `${textObj.status.isEdited ? `edited` : ''}`, messageFooter);
-      createElement('label', [], ``, messageFooter);
+      createElement('label', [], `${drawDelivery(textObj)}`, messageFooter);
       if (index === payload.messages.length - 1 && sessionStorage.inputSended) {
         messageDiv.scrollIntoView();
         delete sessionStorage.inputSended;
@@ -206,7 +216,6 @@ function drawMessages(payload: { messages: Message[] }): void {
     });
   }
 }
-// ${textObj.status.isReaded ? `read` : textObj.status.isDelivered ? `delivered` : `sended`}
 
 function chooseUser(e: Event): void {
   if (e) {
