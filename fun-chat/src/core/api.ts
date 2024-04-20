@@ -1,9 +1,8 @@
 import { createElement, generateID, getMessageDate } from './functions';
-import { ServerStatus, UserIsLogined, Message } from './types';
+import { ServerStatus, UserIsLogined, Message, MessageDeliver } from './types';
 
 const URLstr: string = 'ws://127.0.0.1:4000/';
 export const ws = new WebSocket(URLstr);
-// let OPPONENT_USER: string;
 let CURRENT_USER: string;
 
 const usersActive = {
@@ -61,6 +60,9 @@ function wsMessageHadler(): void {
     }
     if (type === ServerStatus.MSG_FROM_USER) {
       drawMessages(payload);
+    }
+    if (type === ServerStatus.MSG_DELIVER) {
+      messageDeliver(payload);
     }
   };
 }
@@ -177,6 +179,11 @@ function drawDelivery(textObj: Message): string {
   return result;
 }
 
+function drawMessageFooter(footer: HTMLElement, textObj: Message): void {
+  createElement('label', ['message-edit'], `${textObj.status.isEdited ? `edited` : ''}`, footer);
+  createElement('label', ['message-read'], `${drawDelivery(textObj)}`, footer);
+}
+
 function drawMessages(payload: { messages: Message[] }): void {
   if (sessionStorage.sergioCurrentUser) {
     CURRENT_USER = JSON.parse(sessionStorage.sergioCurrentUser);
@@ -189,13 +196,13 @@ function drawMessages(payload: { messages: Message[] }): void {
   } else {
     deleteFirstGreeting();
     payload.messages.forEach((textObj, index) => {
-      console.log(textObj.text);
       const messageDiv = createElement(
         'div',
         ['message-container', `${textObj.from === CURRENT_USER ? `current` : `opponent`}`],
         '',
         box
       );
+      messageDiv.setAttribute('data-messageid', textObj.id);
       const messageInDiv = createElement('div', ['message'], '', messageDiv);
       const messageHeader = createElement('div', ['message-header'], '', messageInDiv);
       createElement(
@@ -207,11 +214,23 @@ function drawMessages(payload: { messages: Message[] }): void {
       createElement('label', [], `${getMessageDate(new Date(textObj.datetime))}`, messageHeader);
       createElement('div', ['message-text'], `${textObj.text}`, messageInDiv);
       const messageFooter = createElement('div', ['message-footer'], '', messageInDiv);
-      createElement('label', [], `${textObj.status.isEdited ? `edited` : ''}`, messageFooter);
-      createElement('label', [], `${drawDelivery(textObj)}`, messageFooter);
+      drawMessageFooter(messageFooter, textObj);
       if (index === payload.messages.length - 1 && sessionStorage.inputSended) {
         messageDiv.scrollIntoView();
         delete sessionStorage.inputSended;
+      }
+    });
+  }
+}
+
+function messageDeliver(payload: { message: MessageDeliver }): void {
+  const messagesArr = document.querySelectorAll('.message-container');
+  if (messagesArr) {
+    messagesArr.forEach((m) => {
+      const v = m as HTMLElement;
+      if (v.dataset.messageid === payload.message.id) {
+        const status = v.querySelector('.message-read') as HTMLElement;
+        status.textContent = 'delivered';
       }
     });
   }

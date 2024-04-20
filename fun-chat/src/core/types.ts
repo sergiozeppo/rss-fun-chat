@@ -85,6 +85,13 @@ export type Message = {
   };
 };
 
+export type MessageDeliver = {
+  id: string;
+  status: {
+    isDelivered: boolean;
+  };
+};
+
 export class ValidationError extends Error {
   constructor(message: string) {
     super(message);
