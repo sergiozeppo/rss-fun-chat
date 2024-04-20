@@ -1,6 +1,6 @@
 import { createElement, generateID } from '../../core/functions';
 import { ServerStatus, User, ValidationError } from '../../core/types';
-import { ws, fetchMessages, autoLogin } from '../../core/api';
+import { ws, fetchMessages } from '../../core/api';
 
 export function deleteItems(): void {
   const delMain = document.querySelector('.main');
@@ -217,7 +217,6 @@ function aboutPage(): void {
   }
   back.addEventListener('click', () => {
     deleteItems();
-    autoLogin();
     console.log('Connection established');
     ws.send(JSON.stringify(usersActive));
     ws.send(JSON.stringify(usersInActive));
