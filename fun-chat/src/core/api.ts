@@ -18,7 +18,7 @@ const usersInActive = {
   payload: null,
 };
 
-function autoLogin(): void {
+export function autoLogin(): void {
   if (sessionStorage.sergioUser) {
     const userAct = JSON.parse(sessionStorage.sergioUser);
     const activeUser = {
@@ -220,8 +220,6 @@ function chooseUser(e: Event): void {
     const dialogUserStatus = dialogHeader.querySelector('.user-text') as HTMLElement;
 
     console.log(dialogUserStatus);
-    // let dialogUserFlag: boolean;
-    // dialogUserStatus.textContent = !currentUserStatus ? 'Offline' : 'Online';
     if (!currentUserStatus) {
       dialogUserStatus.classList?.remove('active');
       dialogUserStatus.textContent = 'Offline';
@@ -229,11 +227,7 @@ function chooseUser(e: Event): void {
       dialogUserStatus.classList.add('active');
       dialogUserStatus.textContent = 'Online';
     }
-    // ? classListHandle(dialogUserStatus, ['user-inactive-text'], ['user-active-text'], 'Offline')
-    // : classListHandle(dialogUserStatus, ['user-active-text'], ['user-inactive-text'], 'Online');
-    // dialogUserFlag = !currentUserStatus ? false : true;
     dialogUser.textContent = currentUserLogin.textContent;
-    // OPPONENT_USER = currentUserLogin.textContent as string;
     dialogHeader.setAttribute('data-opp', currentUserLogin.textContent as string);
 
     const dialogInput = document.querySelector('.dialog-input-field') as HTMLInputElement;

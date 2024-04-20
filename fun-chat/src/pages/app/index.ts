@@ -1,6 +1,6 @@
 import { createElement, generateID } from '../../core/functions';
 import { ServerStatus, User, ValidationError } from '../../core/types';
-import { ws, fetchMessages } from '../../core/api';
+import { ws, fetchMessages, autoLogin } from '../../core/api';
 
 export function deleteItems(): void {
   const delMain = document.querySelector('.main');
@@ -107,7 +107,7 @@ export function mainPage(): void {
   if (sessionStorage.sergioCurrentUser)
     userInfo.textContent = `User: ${JSON.parse(sessionStorage.sergioCurrentUser)}`;
   createElement('label', [], 'RSS FUN CHAT', headerInfo);
-  const infoButton2 = createElement('a', [], 'Info', header) as HTMLLinkElement;
+  const infoButton2 = createElement('a', ['button'], 'Info', header) as HTMLLinkElement;
   const logoutButton = createElement('button', [], 'Logout', header);
 
   const content = createElement('section', ['main-content'], '', main);
@@ -179,6 +179,18 @@ function sendText(): void {
   }
 }
 
+const usersActive = {
+  id: null,
+  type: ServerStatus.USER_ACTIVE,
+  payload: null,
+};
+
+const usersInActive = {
+  id: null,
+  type: ServerStatus.USER_INACTIVE,
+  payload: null,
+};
+
 function aboutPage(): void {
   deleteItems();
   const div = createElement('main', ['about']);
@@ -205,21 +217,13 @@ function aboutPage(): void {
   }
   back.addEventListener('click', () => {
     deleteItems();
+    autoLogin();
+    console.log('Connection established');
+    ws.send(JSON.stringify(usersActive));
+    ws.send(JSON.stringify(usersInActive));
   });
   document.body.appendChild(div);
 }
-
-const usersActive = {
-  id: null,
-  type: ServerStatus.USER_ACTIVE,
-  payload: null,
-};
-
-const usersInActive = {
-  id: null,
-  type: ServerStatus.USER_INACTIVE,
-  payload: null,
-};
 
 form.addEventListener('submit', (e): void => {
   e.preventDefault();
@@ -253,8 +257,9 @@ function logout(): void {
   if (sessionStorage.sergioUser) {
     const delUser: User = JSON.parse(sessionStorage.sergioUser);
     console.log(delUser);
+    const logoutID = generateID();
     const delMessage = {
-      id: 'allls',
+      id: logoutID,
       type: ServerStatus.USER_LOGOUT,
       payload: {
         user: {
