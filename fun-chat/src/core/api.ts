@@ -41,13 +41,7 @@ function autoLogin(): void {
   }
 }
 
-window.onload = (): void => {
-  ws.onopen = (): void => {
-    autoLogin();
-    console.log('Connection established');
-    ws.send(JSON.stringify(usersActive));
-    ws.send(JSON.stringify(usersInActive));
-  };
+function wsMessageHadler(): void {
   ws.onmessage = (event): void => {
     const gdata = JSON.parse(event.data);
     const { payload, type } = gdata;
@@ -69,6 +63,16 @@ window.onload = (): void => {
       drawMessages(payload);
     }
   };
+}
+
+window.onload = (): void => {
+  ws.onopen = (): void => {
+    autoLogin();
+    console.log('Connection established');
+    ws.send(JSON.stringify(usersActive));
+    ws.send(JSON.stringify(usersInActive));
+  };
+  wsMessageHadler();
   ws.onerror = (error): void => {
     if (error instanceof Error) console.log(error.message);
   };
@@ -158,6 +162,11 @@ function createFirstGreeting(box: HTMLElement): void {
   );
 }
 
+function deleteFirstGreeting(): void {
+  const delFirst = document.querySelector('.dialog-first');
+  if (delFirst) delFirst.remove();
+}
+
 function drawMessages(payload: { messages: Message[] }): void {
   if (sessionStorage.sergioCurrentUser) {
     CURRENT_USER = JSON.parse(sessionStorage.sergioCurrentUser);
@@ -165,11 +174,11 @@ function drawMessages(payload: { messages: Message[] }): void {
   const box = document.querySelector('.dialog-box') as HTMLElement;
   clearOldMessages(box);
   if (payload.messages.length === 0) {
+    deleteFirstGreeting();
     createFirstGreeting(box);
   } else {
-    const delFirst = document.querySelector('.dialog-first');
-    if (delFirst) delFirst.remove();
-    payload.messages.forEach((textObj) => {
+    deleteFirstGreeting();
+    payload.messages.forEach((textObj, index) => {
       console.log(textObj.text);
       const messageDiv = createElement(
         'div',
@@ -190,6 +199,10 @@ function drawMessages(payload: { messages: Message[] }): void {
       const messageFooter = createElement('div', ['message-footer'], '', messageInDiv);
       createElement('label', [], `${textObj.status.isEdited ? `edited` : ''}`, messageFooter);
       createElement('label', [], ``, messageFooter);
+      if (index === payload.messages.length - 1 && sessionStorage.inputSended) {
+        messageDiv.scrollIntoView();
+        delete sessionStorage.inputSended;
+      }
     });
   }
 }

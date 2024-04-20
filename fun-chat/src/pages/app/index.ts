@@ -172,6 +172,7 @@ function sendText(): void {
       };
       console.log(sendMessage);
       ws.send(JSON.stringify(sendMessage));
+      sessionStorage.setItem('inputSended', JSON.stringify(true));
       dialogInpitToText.value = '';
       fetchMessages(dialogUserToText.textContent);
     }
