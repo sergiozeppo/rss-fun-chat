@@ -79,11 +79,32 @@ function removeDeletedMessage(payload: {
   });
 }
 
+function editMessage(payload: {
+  message: {
+    id: string;
+    text: string;
+    status: {
+      isEdited: boolean;
+    };
+  };
+}): void {
+  const delArray = document.querySelectorAll('.message-container');
+  delArray.forEach((msg) => {
+    if (msg instanceof HTMLElement) {
+      if (msg.dataset.messageid === payload.message.id) {
+        const text = msg.querySelector('.message-text') as HTMLElement;
+        text.textContent = payload.message.text;
+        const labelToChange = msg.querySelector('.message-edit') as HTMLElement;
+        labelToChange.textContent = 'edited';
+      }
+    }
+  });
+}
+
 function wsMessageHadler(): void {
   ws.onmessage = (event): void => {
     const gdata = JSON.parse(event.data);
     const { payload, type } = gdata;
-    console.log(payload);
     console.log(type);
     if (type === ServerStatus.USER_LOGIN) {
       window.location.hash = '#main';
@@ -111,6 +132,9 @@ function wsMessageHadler(): void {
     }
     if (type === ServerStatus.MSG_DELETE) {
       removeDeletedMessage(payload);
+    }
+    if (type === ServerStatus.MSG_EDIT) {
+      editMessage(payload);
     }
     if (type === ServerStatus.ERROR) {
       errorHandler(payload);
@@ -243,36 +267,72 @@ function drawDelivery(textObj: Message): string {
   return result;
 }
 
-function contextMenuHandler(textObj: Message, box: HTMLElement): void {
+function cancelEdit(editField: HTMLInputElement, button: HTMLElement): void {
+  const a = editField;
+  const b = button;
+  a.value = '';
+  b.style.display = 'none';
+}
+
+function deletePrevMenu(): void {
   const prevMenu = document.querySelector('.context-menu');
   if (prevMenu) prevMenu.remove();
-  const contextMenu = document.createElement('ul');
-  contextMenu.classList.add('context-menu');
+}
+
+function deleteMessage(textObj: Message): void {
+  const delMessage = {
+    id: textObj.id,
+    type: 'MSG_DELETE',
+    payload: {
+      message: {
+        id: textObj.id,
+      },
+    },
+  };
+  ws.send(JSON.stringify(delMessage));
+}
+
+function editMessageSend(textObj: Message, input: HTMLInputElement): void {
+  const editMsg = {
+    id: textObj.id,
+    type: 'MSG_EDIT',
+    payload: {
+      message: {
+        id: textObj.id,
+        text: input.value,
+      },
+    },
+  };
+  ws.send(JSON.stringify(editMsg));
+}
+
+function contextMenuHandler(textObj: Message, box: HTMLElement): void {
+  deletePrevMenu();
+  const contextMenu = createElement('ul', ['context-menu'], '', box);
   const editButton = createElement('li', ['context-menu-item', 'edit'], 'Edit', contextMenu);
   const deleteButton = createElement('li', ['context-menu-item', 'delete'], 'Delete', contextMenu);
-  editButton.dataset.messageid = textObj.id;
-  deleteButton.dataset.messageid = textObj.id;
-  box.appendChild(contextMenu);
-  editButton.addEventListener('click', (e) => {
-    console.log('Изменить');
-    console.log(e.target);
-    const currentMessage = (e.target as HTMLElement).closest('.message-container') as HTMLElement;
-    console.log(currentMessage);
+  editButton.addEventListener('click', () => {
+    const editFieldInput = document.querySelector('.dialog-input-field') as HTMLInputElement;
+    const editField = document.querySelector('.dialog-input') as HTMLElement;
+    const sendButton = document.querySelector('.dialog-button') as HTMLButtonElement;
+    sendButton.style.display = 'none';
+    const sendEditText = createElement('button', ['dialog-button'], 'Edit', editField);
+    editFieldInput.value = textObj.text;
+    const cancelButton = document.querySelector('.dialog-cancel') as HTMLElement;
+    cancelButton.style.display = 'flex';
+    cancelButton.addEventListener('click', () => {
+      cancelEdit(editFieldInput, cancelButton);
+    });
+    sendEditText.addEventListener('click', () => {
+      editMessageSend(textObj, editFieldInput);
+      cancelEdit(editFieldInput, cancelButton);
+      sendButton.style.display = 'block';
+      sendEditText.remove();
+    });
     contextMenu.remove();
   });
-  deleteButton.addEventListener('click', (e) => {
-    console.log('Удалить');
-    console.log(e.target);
-    const delMessage = {
-      id: 'currentMessage.dataset.messageid',
-      type: 'MSG_DELETE',
-      payload: {
-        message: {
-          id: deleteButton.dataset.messageid,
-        },
-      },
-    };
-    ws.send(JSON.stringify(delMessage));
+  deleteButton.addEventListener('click', () => {
+    deleteMessage(textObj);
     contextMenu.remove();
   });
 }

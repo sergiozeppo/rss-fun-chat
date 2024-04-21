@@ -98,6 +98,22 @@ function drawFooter(div: HTMLElement): void {
   createElement('label', [], '2024', footer);
 }
 
+function searchUser(): void {
+  const searchField = document.querySelector('.search') as HTMLInputElement;
+  const usersArr = document.querySelectorAll('.user-list-item');
+  usersArr.forEach((u) => {
+    if (u instanceof HTMLElement) {
+      const searching = u;
+      if (searchField.value) {
+        const login = searching.querySelector('.user-login') as HTMLElement;
+        if (!login.textContent?.toLowerCase().includes(searchField.value.toLowerCase())) {
+          searching.style.display = 'none';
+        } else searching.style.display = 'flex';
+      } else searching.style.display = 'flex';
+    }
+  });
+}
+
 export function mainPage(): void {
   deleteItems();
   const main = createElement('main', ['main'], '', document.body);
@@ -113,6 +129,7 @@ export function mainPage(): void {
   const content = createElement('section', ['main-content'], '', main);
   const userAsideBlock = createElement('aside', ['aside-section'], '', content);
   const filterInput = createElement('input', ['search'], '', userAsideBlock);
+  filterInput.addEventListener('keyup', searchUser);
   const userList = createElement('ul', ['user-list'], '', userAsideBlock);
 
   const dialogBlock = createElement('article', ['dialog-container'], '', content);
@@ -122,6 +139,7 @@ export function mainPage(): void {
   const dialogBox = createElement('article', ['dialog-box'], '', dialogBlock);
   const dialogForm = createElement('form', ['dialog-input'], '', dialogBlock);
   const dialogInput = createElement('input', ['dialog-input-field'], '', dialogForm);
+  createElement('label', ['dialog-cancel'], 'X', dialogForm);
   const dialogButton = createElement('button', ['dialog-button'], 'Send', dialogForm);
   (dialogInput as HTMLInputElement).disabled = true;
   (dialogButton as HTMLButtonElement).disabled = true;
