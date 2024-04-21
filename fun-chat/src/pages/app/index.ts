@@ -117,7 +117,7 @@ export function mainPage(): void {
 
   const dialogBlock = createElement('article', ['dialog-container'], '', content);
   const dialogHeader = createElement('article', ['dialog-header'], '', dialogBlock);
-  const opponent = createElement('label', [], '', dialogHeader);
+  const opponent = createElement('label', ['opponent-login'], '', dialogHeader);
   const userStatusText = createElement('label', ['user-text'], '', dialogHeader);
   const dialogBox = createElement('article', ['dialog-box'], '', dialogBlock);
   const dialogForm = createElement('form', ['dialog-input'], '', dialogBlock);
@@ -155,7 +155,7 @@ function buttonListenersSetup(
 
 function sendText(): void {
   const dialogInpitToText = document.querySelector('.dialog-input-field') as HTMLInputElement;
-  if (dialogInpitToText.value !== '') {
+  if (dialogInpitToText.value.trim() !== '') {
     const dialogHeaderToText = document.querySelector('.dialog-header') as HTMLElement;
     const dialogUserToText = dialogHeaderToText.querySelector('label') as HTMLElement;
     if (dialogUserToText.textContent) {
@@ -232,6 +232,7 @@ form.addEventListener('submit', (e): void => {
   };
   sessionStorage.setItem('sergioUser', JSON.stringify(user));
   sessionStorage.setItem('sergioCurrentUser', JSON.stringify(loginInput.value));
+  if (!sessionStorage.sergioLoginState) sessionStorage.setItem('sergioLoginState', 'true');
   const reqID = generateID();
   const msg = {
     id: reqID,
@@ -247,9 +248,6 @@ form.addEventListener('submit', (e): void => {
   ws.send(JSON.stringify(usersActive));
   ws.send(JSON.stringify(usersInActive));
   console.log(ws.readyState);
-
-  window.location.hash = '#main';
-  mainPage();
 });
 
 function logout(): void {

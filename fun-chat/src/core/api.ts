@@ -37,7 +37,46 @@ export function autoLogin(): void {
     };
 
     ws.send(JSON.stringify(msg));
+    ws.send(JSON.stringify(usersActive));
+    ws.send(JSON.stringify(usersInActive));
   }
+}
+
+function errorHandler(payload: { error: string }): void {
+  if (
+    sessionStorage.sergioLoginState &&
+    (payload.error === 'a user with this login is already authorized' ||
+      payload.error === 'incorrect password')
+  ) {
+    const modal = createElement('div', ['modal', 'visible'], '');
+    const resultCreate = createElement('div', ['result'], '', modal);
+    const greetCreate = createElement('h3', ['greeting'], ` Error: ${payload.error}!`);
+    resultCreate.appendChild(greetCreate);
+    document.body.appendChild(modal);
+    window.addEventListener('click', () => {
+      modal.classList?.remove('visible');
+      modal.remove();
+      delete sessionStorage.sergioLoginState;
+    });
+  }
+}
+
+function removeDeletedMessage(payload: {
+  message: {
+    id: string;
+    status: {
+      isDeleted: boolean;
+    };
+  };
+}): void {
+  const delArray = document.querySelectorAll('.message-container');
+  delArray.forEach((msg) => {
+    if (msg instanceof HTMLElement) {
+      if (msg.dataset.messageid === payload.message.id) {
+        msg.remove();
+      }
+    }
+  });
 }
 
 function wsMessageHadler(): void {
@@ -46,6 +85,9 @@ function wsMessageHadler(): void {
     const { payload, type } = gdata;
     console.log(payload);
     console.log(type);
+    if (type === ServerStatus.USER_LOGIN) {
+      window.location.hash = '#main';
+    }
     if (type === ServerStatus.USER_ACTIVE) {
       retrieveActiveUsers(payload);
     }
@@ -61,8 +103,17 @@ function wsMessageHadler(): void {
     if (type === ServerStatus.MSG_FROM_USER) {
       drawMessages(payload);
     }
+    if (type === ServerStatus.MSG_SEND) {
+      appendMessage(payload);
+    }
     if (type === ServerStatus.MSG_DELIVER) {
       messageDeliver(payload);
+    }
+    if (type === ServerStatus.MSG_DELETE) {
+      removeDeletedMessage(payload);
+    }
+    if (type === ServerStatus.ERROR) {
+      errorHandler(payload);
     }
   };
 }
@@ -71,12 +122,12 @@ window.onload = (): void => {
   ws.onopen = (): void => {
     autoLogin();
     console.log('Connection established');
-    ws.send(JSON.stringify(usersActive));
-    ws.send(JSON.stringify(usersInActive));
   };
   wsMessageHadler();
   ws.onerror = (error): void => {
-    if (error instanceof Error) console.log(error.message);
+    if (error instanceof Error) {
+      console.log(error.message);
+    }
   };
   ws.onclose = (event): void => {
     if (event.wasClean) {
@@ -88,13 +139,26 @@ window.onload = (): void => {
   };
 };
 
-function retrieveActiveUsers(payload: { users: UserIsLogined[] }): void {
-  if (sessionStorage.sergioUser) {
+function createFirstUserChoose(box: HTMLElement): void {
+  createElement(
+    'div',
+    ['dialog-first'],
+    'Choose your friend to start your unforgettable communication...',
+    box
+  );
+}
+
+export function retrieveActiveUsers(payload: { users: UserIsLogined[] }): void {
+  if (sessionStorage.sergioUser && window.location.hash === '#main') {
     if (payload?.users) {
       const userlist = payload.users;
       const user = JSON.parse(sessionStorage.sergioUser);
       const filterUserlist = userlist.filter((someUser) => someUser.login !== user.login);
       const ul = document.querySelector('.user-list') as HTMLElement;
+      const box = document.querySelector('.dialog-box') as HTMLElement;
+      clearOldMessages(box);
+      deleteFirstGreeting();
+      createFirstUserChoose(box);
 
       filterUserlist.forEach((flUser) => {
         const li = createElement('li', ['user-list-item'], '');
@@ -111,7 +175,7 @@ function retrieveActiveUsers(payload: { users: UserIsLogined[] }): void {
   }
 }
 
-function appendExternalUsers(payload: { user: UserIsLogined }): void {
+export function appendExternalUsers(payload: { user: UserIsLogined }): void {
   if (sessionStorage.sergioUser) {
     if (payload?.user) {
       const userItem = payload.user;
@@ -179,12 +243,48 @@ function drawDelivery(textObj: Message): string {
   return result;
 }
 
-function drawMessageFooter(footer: HTMLElement, textObj: Message): void {
-  createElement('label', ['message-edit'], `${textObj.status.isEdited ? `edited` : ''}`, footer);
-  createElement('label', ['message-read'], `${drawDelivery(textObj)}`, footer);
+function contextMenuHandler(textObj: Message, box: HTMLElement): void {
+  const prevMenu = document.querySelector('.context-menu');
+  if (prevMenu) prevMenu.remove();
+  const contextMenu = document.createElement('ul');
+  contextMenu.classList.add('context-menu');
+  const editButton = createElement('li', ['context-menu-item', 'edit'], 'Edit', contextMenu);
+  const deleteButton = createElement('li', ['context-menu-item', 'delete'], 'Delete', contextMenu);
+  editButton.dataset.messageid = textObj.id;
+  deleteButton.dataset.messageid = textObj.id;
+  box.appendChild(contextMenu);
+  editButton.addEventListener('click', (e) => {
+    console.log('Изменить');
+    console.log(e.target);
+    const currentMessage = (e.target as HTMLElement).closest('.message-container') as HTMLElement;
+    console.log(currentMessage);
+    contextMenu.remove();
+  });
+  deleteButton.addEventListener('click', (e) => {
+    console.log('Удалить');
+    console.log(e.target);
+    const delMessage = {
+      id: 'currentMessage.dataset.messageid',
+      type: 'MSG_DELETE',
+      payload: {
+        message: {
+          id: deleteButton.dataset.messageid,
+        },
+      },
+    };
+    ws.send(JSON.stringify(delMessage));
+    contextMenu.remove();
+  });
 }
 
-function drawMessages(payload: { messages: Message[] }): void {
+function drawMessageFooter(footer: HTMLElement, textObj: Message, currentU: string): void {
+  createElement('label', ['message-edit'], `${textObj.status.isEdited ? `edited` : ''}`, footer);
+  if (textObj.from === currentU) {
+    createElement('label', ['message-read'], `${drawDelivery(textObj)}`, footer);
+  } else createElement('label', ['message-read'], ``, footer);
+}
+
+export function drawMessages(payload: { messages: Message[] }): void {
   if (sessionStorage.sergioCurrentUser) {
     CURRENT_USER = JSON.parse(sessionStorage.sergioCurrentUser);
   }
@@ -196,13 +296,13 @@ function drawMessages(payload: { messages: Message[] }): void {
   } else {
     deleteFirstGreeting();
     payload.messages.forEach((textObj, index) => {
-      const messageDiv = createElement(
-        'div',
-        ['message-container', `${textObj.from === CURRENT_USER ? `current` : `opponent`}`],
-        '',
-        box
-      );
+      const side = textObj.from === CURRENT_USER ? `current` : `opponent`;
+      const messageDiv = createElement('div', ['message-container', `${side}`], '', box);
       messageDiv.setAttribute('data-messageid', textObj.id);
+      messageDiv.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        contextMenuHandler(textObj, messageDiv);
+      });
       const messageInDiv = createElement('div', ['message'], '', messageDiv);
       const messageHeader = createElement('div', ['message-header'], '', messageInDiv);
       createElement(
@@ -214,7 +314,7 @@ function drawMessages(payload: { messages: Message[] }): void {
       createElement('label', [], `${getMessageDate(new Date(textObj.datetime))}`, messageHeader);
       createElement('div', ['message-text'], `${textObj.text}`, messageInDiv);
       const messageFooter = createElement('div', ['message-footer'], '', messageInDiv);
-      drawMessageFooter(messageFooter, textObj);
+      drawMessageFooter(messageFooter, textObj, CURRENT_USER);
       if (index === payload.messages.length - 1 && sessionStorage.inputSended) {
         messageDiv.scrollIntoView();
         delete sessionStorage.inputSended;
@@ -223,7 +323,44 @@ function drawMessages(payload: { messages: Message[] }): void {
   }
 }
 
-function messageDeliver(payload: { message: MessageDeliver }): void {
+export function appendMessage(payload: { message: Message }): void {
+  if (sessionStorage.sergioCurrentUser) {
+    CURRENT_USER = JSON.parse(sessionStorage.sergioCurrentUser);
+  }
+  const opponent = document.querySelector('.opponent-login');
+  if (payload.message.from === opponent?.textContent) {
+    const box = document.querySelector('.dialog-box') as HTMLElement;
+    const messageDiv = createElement(
+      'div',
+      ['message-container', `${payload.message.from === CURRENT_USER ? `current` : `opponent`}`],
+      '',
+      box
+    );
+    messageDiv.setAttribute('data-messageid', payload.message.id);
+    const messageInDiv = createElement('div', ['message'], '', messageDiv);
+    const messageHeader = createElement('div', ['message-header'], '', messageInDiv);
+    createElement(
+      'label',
+      [],
+      `${payload.message.from === CURRENT_USER ? `${CURRENT_USER} (You)` : `${payload.message.from}`}`,
+      messageHeader
+    );
+    createElement(
+      'label',
+      [],
+      `${getMessageDate(new Date(payload.message.datetime))}`,
+      messageHeader
+    );
+    createElement('div', ['message-text'], `${payload.message.text}`, messageInDiv);
+    const messageFooter = createElement('div', ['message-footer'], '', messageInDiv);
+    drawMessageFooter(messageFooter, payload.message, CURRENT_USER);
+
+    messageDiv.scrollIntoView();
+    delete sessionStorage.inputSended;
+  }
+}
+
+export function messageDeliver(payload: { message: MessageDeliver }): void {
   const messagesArr = document.querySelectorAll('.message-container');
   if (messagesArr) {
     messagesArr.forEach((m) => {
@@ -280,3 +417,12 @@ export function fetchMessages(userToFetch: string): void {
   console.log(fetchMessage);
   ws.send(JSON.stringify(fetchMessage));
 }
+
+// function disablecontext() {
+//   return false;
+// }
+// function disableRMB() {
+//   const box = document.querySelector('.dialog-box') as HTMLElement;
+//   box.oncontextmenu = disablecontext;
+// }
+// disableRMB();
