@@ -491,3 +491,21 @@ button:hover,
   font-size: 30px;
   font-weight: 900;
 }
+.footer-link {
+  display: flex;
+  flex-direction: row;
+  text-decoration: none;
+  color: var(--text-alt-color);
+}
+.footer-link .author {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 900;
+}
+.footer-link svg {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
