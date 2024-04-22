@@ -47,7 +47,7 @@ body {
 form {
   background-color: var(--form-bg-color);
   padding: 20px;
-  border-radius: 5px;
+  border-radius: 6px;
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
@@ -58,11 +58,11 @@ button,
 .button {
   display: block;
   width: 100%;
-  margin-bottom: 10px;
-  margin-right: 10px;
-  padding: 10px;
+  margin-bottom: 9px;
+  margin-right: 9px;
+  padding: 9px;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
 }
 
 button,
@@ -87,12 +87,12 @@ button:hover,
 .about {
   align-items: center;
   border: 1.5px solid;
-  border-radius: 5px;
+  border-radius: 6px;
   display: flex;
   flex-direction: column;
   margin: 0 auto;
   min-width: 300px;
-  padding: 1%;
+  padding: 1.5%;
   position: relative;
   top: 50;
   width: 50%;
@@ -104,7 +104,7 @@ button:hover,
 
 .desc {
   word-wrap: break-word;
-  padding: 0 10px;
+  padding: 0 9px;
   text-align: justify;
 }
 
@@ -118,25 +118,25 @@ button:hover,
 }
 .header {
   border: 1.5px solid;
-  border-radius: 5px;
-  height: 10svh;
-  margin: 1% 0;
-  max-height: 55px;
-  min-height: 45px;
-  padding: 0 2%;
+  border-radius: 6px;
+  height: 9svh;
+  margin: 1.5% 0;
+  max-height: 50px;
+  min-height: 50px;
+  padding: 0 1.5%;
   width: 100%;
 }
 
 .header-info {
   height: 100%;
-  margin-right: 1%;
+  margin-right: 1.5%;
   overflow-x: hidden;
-  width: 80%;
+  width: 79%;
 }
 
 .main-content {
   flex-direction: row;
-  height: 70svh;
+  height: 69svh;
   width: 100%;
 }
 .main-content,
@@ -157,16 +157,16 @@ button:hover,
 .footer {
   align-items: center;
   border: 1.5px solid;
-  border-radius: 5px;
+  border-radius: 6px;
   display: flex;
-  margin: 1% 0;
+  margin: 1.5% 0;
 }
 
 .search {
-  height: 24px;
+  height: 25px;
   outline: none;
-  padding: 1% 5%;
-  width: 83%;
+  padding: 1.5% 5.5%;
+  width: 80%;
   background-color: var(--search-color);
 }
 
@@ -176,7 +176,7 @@ button:hover,
   flex-direction: column;
   justify-content: flex-start;
   overflow-y: scroll;
-  padding: 1%;
+  padding: 1.5%;
   width: 100%;
 }
 
@@ -186,17 +186,16 @@ button:hover,
 
 .user-list {
   align-items: flex-start;
-  margin: 1%;
+  margin: 1.5%;
 }
 
 .user-list-item {
   align-items: center;
-  border-radius: 2px;
-
+  border-radius: 3px;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
-  padding: 1% 5%;
+  padding: 1.5% 5.5%;
   width: 100%;
 }
 
@@ -207,25 +206,25 @@ button:hover,
   background: var(--user-inactive);
   border: 1.5px solid;
   border-radius: 50%;
-  height: 10px;
-  width: 10px;
-  margin: 0 5% 0 0;
+  height: 9px;
+  width: 9px;
+  margin: 0 5.5% 0 0;
 }
 
 .user-login {
-  margin: 0 2% 0 0;
+  margin: 0 2.5% 0 0;
   overflow-x: hidden;
-  width: 75%;
+  width: 76%;
 }
 
 .dialog-container {
   border: 1.5px solid;
-  border-radius: 5px;
+  border-radius: 6px;
   flex-direction: column;
   height: 100%;
-  margin: 1% 0;
+  margin: 1.5% 0;
   padding: 0.5%;
-  width: 64%;
+  width: 63%;
 }
 
 .dialog-header {
@@ -233,9 +232,9 @@ button:hover,
   border-bottom: 1.5px solid;
   display: flex;
   flex-direction: row;
-  height: 10%;
+  height: 9%;
   justify-content: space-around;
-  margin: 0 0 1%;
+  margin: 0 0 1.5%;
   max-height: 35px;
   padding: 0 0.5% 0.5%;
   width: 100%;
@@ -270,19 +269,19 @@ button:hover,
 
   display: flex;
   flex-direction: row;
-  height: 15%;
+  height: 16%;
   justify-content: space-around;
-  margin: 1% 0 0;
+  margin: 1.5% 0 0;
   max-height: 35px;
   padding: 0.5% 0.5% 0;
   width: 100%;
 }
 
 .dialog-input-field {
-  height: 28px;
+  height: 29px;
   outline: none;
-  padding: 0 5%;
-  width: 70%;
+  padding: 0 5.5%;
+  width: 69%;
 }
 
 .dialog-button.small {
@@ -293,18 +292,18 @@ button:hover,
 }
 
 .dialog-button {
-  height: 32px;
-  margin: 1%;
-  max-width: 200px;
+  height: 31px;
+  margin: 1.5%;
+  max-width: 202px;
   width: 50%;
 }
 
 .footer {
   flex-direction: row;
-  height: 10svh;
+  height: 9svh;
   justify-content: space-around;
-  max-height: 55px;
-  min-height: 45px;
+  max-height: 50px;
+  min-height: 50px;
   width: 100%;
 }
 
@@ -330,17 +329,17 @@ button:hover,
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  margin: 1% 0;
+  margin: 1.5% 0;
   width: 100%;
 }
 .message {
   align-items: center;
   background: var(--message);
-  border-radius: 5px;
+  border-radius: 6px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding: 1%;
+  padding: 1.5%;
   width: 60%;
 }
 .message-header {
@@ -357,7 +356,7 @@ button:hover,
 }
 .message-text {
   background: var(--message-text);
-  border-radius: 5px;
+  border-radius: 6px;
   margin: 2% 0 0;
   padding: 3%;
   text-align: justify;
@@ -445,17 +444,17 @@ button:hover,
 .context-menu {
   background: var(--context-menu-bg);
   border: 1.5px solid;
-  border-radius: 5px;
+  border-radius: 6px;
   list-style: none;
   margin: 0;
   max-width: 200px;
-  padding: 1%;
+  padding: 1.5%;
   position: absolute;
   width: 100%;
 }
 .context-menu-item {
   background: var(--context-menu-bg);
-  border-radius: 5px;
+  border-radius: 6px;
   padding: 1% 5%;
   width: 100%;
 }

@@ -4,6 +4,7 @@ import { ServerStatus, UserIsLogined, Message, MessageDeliver } from './types';
 const URLstr: string = 'ws://127.0.0.1:4000/';
 export const ws = new WebSocket(URLstr);
 let CURRENT_USER: string;
+let aside: string = '';
 
 const usersActive = {
   id: null,
@@ -105,7 +106,6 @@ function wsMessageHadler(): void {
   ws.onmessage = (event): void => {
     const gdata = JSON.parse(event.data);
     const { payload, type } = gdata;
-    console.log(type);
     if (type === ServerStatus.USER_LOGIN) {
       window.location.hash = '#main';
     }
@@ -123,6 +123,7 @@ function wsMessageHadler(): void {
     }
     if (type === ServerStatus.MSG_FROM_USER) {
       drawMessages(payload);
+      checkForReadMessages(payload, sessionStorage.SergioAside);
     }
     if (type === ServerStatus.MSG_SEND) {
       appendMessage(payload);
@@ -143,6 +144,10 @@ function wsMessageHadler(): void {
 }
 
 window.onload = (): void => {
+  connect();
+};
+
+function connect(): void {
   ws.onopen = (): void => {
     autoLogin();
     console.log('Connection established');
@@ -159,9 +164,13 @@ window.onload = (): void => {
     } else {
       console.log('Connection died');
     }
-    console.log(event.code + event.reason);
+    setInterval(() => {
+      console.log('Trying to reconnect...');
+      connect();
+      autoLogin();
+    }, 3000);
   };
-};
+}
 
 function createFirstUserChoose(box: HTMLElement): void {
   createElement(
@@ -194,6 +203,8 @@ export function retrieveActiveUsers(payload: { users: UserIsLogined[] }): void {
         liLogin.textContent = flUser.login;
         ul.append(li);
         li.addEventListener('click', chooseUser);
+        aside = flUser.login;
+        fetchMessages(aside);
       });
     }
   }
@@ -208,7 +219,6 @@ export function appendExternalUsers(payload: { user: UserIsLogined }): void {
       console.log(oldUserAppend);
       oldUserAppend?.remove();
       const ifOpp = document.querySelector(`article[data-opp=${userItem.login}]`);
-      console.log(ifOpp);
 
       const li = createElement('li', ['user-list-item'], '');
       const liStat = createElement('div', ['user-status'], '', li);
@@ -268,6 +278,7 @@ function drawDelivery(textObj: Message): string {
 }
 
 function cancelEdit(editField: HTMLInputElement, button: HTMLElement): void {
+  // gave those weird namings just to not violate ESlint rules - no params assign and redeclare vars
   const a = editField;
   const b = button;
   a.value = '';
@@ -308,33 +319,40 @@ function editMessageSend(textObj: Message, input: HTMLInputElement): void {
 
 function contextMenuHandler(textObj: Message, box: HTMLElement): void {
   deletePrevMenu();
-  const contextMenu = createElement('ul', ['context-menu'], '', box);
-  const editButton = createElement('li', ['context-menu-item', 'edit'], 'Edit', contextMenu);
-  const deleteButton = createElement('li', ['context-menu-item', 'delete'], 'Delete', contextMenu);
-  editButton.addEventListener('click', () => {
-    const editFieldInput = document.querySelector('.dialog-input-field') as HTMLInputElement;
-    const editField = document.querySelector('.dialog-input') as HTMLElement;
-    const sendButton = document.querySelector('.dialog-button') as HTMLButtonElement;
-    sendButton.style.display = 'none';
-    const sendEditText = createElement('button', ['dialog-button'], 'Edit', editField);
-    editFieldInput.value = textObj.text;
-    const cancelButton = document.querySelector('.dialog-cancel') as HTMLElement;
-    cancelButton.style.display = 'flex';
-    cancelButton.addEventListener('click', () => {
-      cancelEdit(editFieldInput, cancelButton);
+  if (textObj.from === sessionStorage.sergioCurrentUser) {
+    const contextMenu = createElement('ul', ['context-menu'], '', box);
+    const editButton = createElement('li', ['context-menu-item', 'edit'], 'Edit', contextMenu);
+    const deleteButton = createElement(
+      'li',
+      ['context-menu-item', 'delete'],
+      'Delete',
+      contextMenu
+    );
+    editButton.addEventListener('click', () => {
+      const editFieldInput = document.querySelector('.dialog-input-field') as HTMLInputElement;
+      const editField = document.querySelector('.dialog-input') as HTMLElement;
+      const sendButton = document.querySelector('.dialog-button') as HTMLButtonElement;
+      sendButton.style.display = 'none';
+      const sendEditText = createElement('button', ['dialog-button'], 'Edit', editField);
+      editFieldInput.value = textObj.text;
+      const cancelButton = document.querySelector('.dialog-cancel') as HTMLElement;
+      cancelButton.style.display = 'flex';
+      cancelButton.addEventListener('click', () => {
+        cancelEdit(editFieldInput, cancelButton);
+      });
+      sendEditText.addEventListener('click', () => {
+        editMessageSend(textObj, editFieldInput);
+        cancelEdit(editFieldInput, cancelButton);
+        sendButton.style.display = 'block';
+        sendEditText.remove();
+      });
+      contextMenu.remove();
     });
-    sendEditText.addEventListener('click', () => {
-      editMessageSend(textObj, editFieldInput);
-      cancelEdit(editFieldInput, cancelButton);
-      sendButton.style.display = 'block';
-      sendEditText.remove();
+    deleteButton.addEventListener('click', () => {
+      deleteMessage(textObj);
+      contextMenu.remove();
     });
-    contextMenu.remove();
-  });
-  deleteButton.addEventListener('click', () => {
-    deleteMessage(textObj);
-    contextMenu.remove();
-  });
+  }
 }
 
 function drawMessageFooter(footer: HTMLElement, textObj: Message, currentU: string): void {
@@ -344,42 +362,61 @@ function drawMessageFooter(footer: HTMLElement, textObj: Message, currentU: stri
   } else createElement('label', ['message-read'], ``, footer);
 }
 
+function checkForReadMessages(payload: { messages: Message[] }, userToDraw: string): void {
+  let sumOfMessages: number = 0;
+  const user = document.querySelector(`li[data-login=${userToDraw}`) as HTMLElement;
+  const duplicateIndicator = user.querySelector('.user-messages');
+  if (duplicateIndicator) duplicateIndicator.remove();
+  payload.messages.forEach((value) => {
+    if (value.from !== CURRENT_USER) {
+      if (!value.status.isReaded) sumOfMessages += 1;
+    }
+  });
+  if (sumOfMessages !== 0) {
+    const liRead = createElement('label', ['user-messages'], `${sumOfMessages}`);
+    user.append(liRead);
+  }
+  sumOfMessages = 0;
+}
+
 export function drawMessages(payload: { messages: Message[] }): void {
   if (sessionStorage.sergioCurrentUser) {
     CURRENT_USER = JSON.parse(sessionStorage.sergioCurrentUser);
   }
-  const box = document.querySelector('.dialog-box') as HTMLElement;
-  clearOldMessages(box);
-  if (payload.messages.length === 0) {
-    deleteFirstGreeting();
-    createFirstGreeting(box);
-  } else {
-    deleteFirstGreeting();
-    payload.messages.forEach((textObj, index) => {
-      const side = textObj.from === CURRENT_USER ? `current` : `opponent`;
-      const messageDiv = createElement('div', ['message-container', `${side}`], '', box);
-      messageDiv.setAttribute('data-messageid', textObj.id);
-      messageDiv.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        contextMenuHandler(textObj, messageDiv);
+  if (sessionStorage.sergioOpponent) {
+    const box = document.querySelector('.dialog-box') as HTMLElement;
+    clearOldMessages(box);
+    if (payload.messages.length === 0) {
+      deleteFirstGreeting();
+      createFirstGreeting(box);
+    } else {
+      deleteFirstGreeting();
+      payload.messages.forEach((textObj, index) => {
+        const side = textObj.from === CURRENT_USER ? `current` : `opponent`;
+        const messageDiv = createElement('div', ['message-container', `${side}`], '', box);
+        messageDiv.setAttribute('data-messageid', textObj.id);
+        messageDiv.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          contextMenuHandler(textObj, messageDiv);
+        });
+        const messageInDiv = createElement('div', ['message'], '', messageDiv);
+        const messageHeader = createElement('div', ['message-header'], '', messageInDiv);
+        createElement(
+          'label',
+          [],
+          `${textObj.from === CURRENT_USER ? `${CURRENT_USER} (You)` : `${textObj.from}`}`,
+          messageHeader
+        );
+        createElement('label', [], `${getMessageDate(new Date(textObj.datetime))}`, messageHeader);
+        createElement('div', ['message-text'], `${textObj.text}`, messageInDiv);
+        const messageFooter = createElement('div', ['message-footer'], '', messageInDiv);
+        drawMessageFooter(messageFooter, textObj, CURRENT_USER);
+        if (index === payload.messages.length - 1 && sessionStorage.inputSended) {
+          messageDiv.scrollIntoView();
+          delete sessionStorage.inputSended;
+        }
       });
-      const messageInDiv = createElement('div', ['message'], '', messageDiv);
-      const messageHeader = createElement('div', ['message-header'], '', messageInDiv);
-      createElement(
-        'label',
-        [],
-        `${textObj.from === CURRENT_USER ? `${CURRENT_USER} (You)` : `${textObj.from}`}`,
-        messageHeader
-      );
-      createElement('label', [], `${getMessageDate(new Date(textObj.datetime))}`, messageHeader);
-      createElement('div', ['message-text'], `${textObj.text}`, messageInDiv);
-      const messageFooter = createElement('div', ['message-footer'], '', messageInDiv);
-      drawMessageFooter(messageFooter, textObj, CURRENT_USER);
-      if (index === payload.messages.length - 1 && sessionStorage.inputSended) {
-        messageDiv.scrollIntoView();
-        delete sessionStorage.inputSended;
-      }
-    });
+    }
   }
 }
 
@@ -443,8 +480,6 @@ function chooseUser(e: Event): void {
     const dialogUser = dialogHeader.querySelector('label') as HTMLElement;
 
     const dialogUserStatus = dialogHeader.querySelector('.user-text') as HTMLElement;
-
-    console.log(dialogUserStatus);
     if (!currentUserStatus) {
       dialogUserStatus.classList?.remove('active');
       dialogUserStatus.textContent = 'Offline';
@@ -453,6 +488,8 @@ function chooseUser(e: Event): void {
       dialogUserStatus.textContent = 'Online';
     }
     dialogUser.textContent = currentUserLogin.textContent;
+    if (sessionStorage.sergioOpponent) delete sessionStorage.sergioOpponent;
+    sessionStorage.setItem('sergioOpponent', JSON.stringify(dialogUser.textContent));
     dialogHeader.setAttribute('data-opp', currentUserLogin.textContent as string);
 
     const dialogInput = document.querySelector('.dialog-input-field') as HTMLInputElement;
@@ -474,7 +511,7 @@ export function fetchMessages(userToFetch: string): void {
       },
     },
   };
-  console.log(fetchMessage);
+  sessionStorage.setItem('SergioAside', JSON.stringify(userToFetch));
   ws.send(JSON.stringify(fetchMessage));
 }
 
