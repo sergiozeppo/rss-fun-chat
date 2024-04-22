@@ -1,4 +1,4 @@
-import { createElement, generateID } from '../../core/functions';
+import { createElement, generateID, logoRSS, logoGithub } from '../../core/functions';
 import { ServerStatus, User, ValidationError } from '../../core/types';
 import { ws, fetchMessages } from '../../core/api';
 
@@ -23,14 +23,15 @@ export function loginPage(): void {
     navigate();
   } else {
     loginInput.type = 'text';
-    loginInput.placeholder = 'Логин';
+    loginInput.placeholder = 'Login';
     loginInput.pattern = '^[A-Z][\\-a-zA-z]{2,}$';
     passwordInput.type = 'password';
-    passwordInput.placeholder = 'Пароль';
+    passwordInput.placeholder = 'Password';
     passwordInput.pattern = '^[A-Z][\\-a-zA-z]{3,}$';
-    loginButton.textContent = 'Войти';
+    loginButton.textContent = 'Login';
     loginButton.disabled = true;
-    infoButton.textContent = 'Инфо';
+    infoButton.classList.add('button');
+    infoButton.textContent = 'Info';
 
     form.appendChild(loginInput);
     form.appendChild(passwordInput);
@@ -93,9 +94,13 @@ passwordInput.addEventListener('focusout', checkSurname);
 
 function drawFooter(div: HTMLElement): void {
   const footer = createElement('footer', ['footer'], '', div);
-  createElement('label', [], 'RSSchool', footer);
-  createElement('label', [], 'sergiozeppo', footer);
-  createElement('label', [], '2024', footer);
+  const logo = createElement('a', ['footer-link'], '', footer) as HTMLLinkElement;
+  logo.href = 'https://rs.school/';
+  logo.innerHTML = logoRSS();
+  const github = createElement('a', ['footer-link'], 'sergiozeppo', footer) as HTMLLinkElement;
+  github.href = 'https://github.com/sergiozeppo';
+  github.innerHTML = logoGithub();
+  createElement('label', ['year'], '2024', footer);
 }
 
 function searchUser(): void {
@@ -128,7 +133,8 @@ export function mainPage(): void {
 
   const content = createElement('section', ['main-content'], '', main);
   const userAsideBlock = createElement('aside', ['aside-section'], '', content);
-  const filterInput = createElement('input', ['search'], '', userAsideBlock);
+  const filterInput = createElement('input', ['search'], '', userAsideBlock) as HTMLInputElement;
+  filterInput.placeholder = 'Search user...';
   filterInput.addEventListener('keyup', searchUser);
   const userList = createElement('ul', ['user-list'], '', userAsideBlock);
 
@@ -139,6 +145,7 @@ export function mainPage(): void {
   const dialogBox = createElement('article', ['dialog-box'], '', dialogBlock);
   const dialogForm = createElement('form', ['dialog-input'], '', dialogBlock);
   const dialogInput = createElement('input', ['dialog-input-field'], '', dialogForm);
+  (dialogInput as HTMLInputElement).placeholder = 'Type your message...';
   createElement('label', ['dialog-cancel'], 'X', dialogForm);
   const dialogButton = createElement('button', ['dialog-button'], 'Send', dialogForm);
   (dialogInput as HTMLInputElement).disabled = true;
@@ -216,18 +223,13 @@ function aboutPage(): void {
   createElement(
     'label',
     ['desc'],
-    'Приложение разработано для демонстрации задания Fun Chat в рамках курса RSSchool JS/FE 2023Q3',
+    'The application was developed as part of the Fun Chat assignment in the RSSchool JavaScript/Frontend 2023Q3 course',
     div
   );
-  createElement(
-    'label',
-    ['desc'],
-    'Удаление пользователей и сообщений происходит один раз в сутки',
-    div
-  );
-  const link = createElement('a', ['ass'], 'Автор sergiozeppo', div) as HTMLLinkElement;
+  createElement('label', ['desc'], 'Users and messages are deleted once a day', div);
+  const link = createElement('a', ['ass'], 'Author - @sergiozeppo', div) as HTMLLinkElement;
   link.href = 'https://github.com/sergiozeppo';
-  const back = createElement('a', ['ass'], 'Вернуться назад', div) as HTMLLinkElement;
+  const back = createElement('a', ['ass'], 'Go back', div) as HTMLLinkElement;
   if (sessionStorage.sergioUser) {
     back.href = '#main';
   } else {

@@ -1,15 +1,51 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --link-color: #646cff;
+  --link-hover-color: #535bf2;
+  --search-color: #cfc3d6;
+  --text-color: black;
+  --main-color: #decfe4;
+  --form-bg-color: #e3e1ec;
+  --border-color: black;
+  --button-text-color: black;
+  --button-bg-color: #cfc3d6;
+  --button-bg-hover-color: #aaa;
+  --button-disabled-color: #777;
+  --user-active: #80a249;
+  --user-inactive: #8b0000;
+  --message: #f5f5f5;
+  --message-text: #fdfdfd;
+  --cancel-color: red;
+  --text-alt-color: white;
+  --context-menu-bg: #f0f0f0;
+  --context-menu-bg-hover: #fdfdfd;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  background-color: #f0f0f0;
+  background-color: var(--main-color);
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
   margin: 0;
-  font-family: Arial, sans-serif;
 }
 
 form {
-  background-color: #ddd;
+  background-color: var(--form-bg-color);
   padding: 20px;
   border-radius: 5px;
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
@@ -18,28 +54,39 @@ form {
 }
 
 input,
-button {
+button,
+.button {
   display: block;
   width: 100%;
   margin-bottom: 10px;
+  margin-right: 10px;
   padding: 10px;
   border: none;
   border-radius: 5px;
 }
 
-button {
-  background-color: #bbb;
-  color: white;
+button,
+.button {
+  background-color: var(--button-bg-color);
+  color: var(--text-color);
   cursor: pointer;
+  width: 200px;
+  height: 35px;
 }
 
-button:hover {
-  background-color: #aaa;
+.button {
+  text-decoration: none;
+  text-align: center;
+}
+
+button:hover,
+.button:hover {
+  background-color: var(--button-bg-hover-color);
 }
 
 .about {
   align-items: center;
-  border: 1px solid;
+  border: 1.5px solid;
   border-radius: 5px;
   display: flex;
   flex-direction: column;
@@ -59,4 +106,388 @@ button:hover {
   word-wrap: break-word;
   padding: 0 10px;
   text-align: justify;
+}
+
+.header-info,
+.header {
+  align-items: center;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+.header {
+  border: 1.5px solid;
+  border-radius: 5px;
+  height: 10svh;
+  margin: 1% 0;
+  max-height: 55px;
+  min-height: 45px;
+  padding: 0 2%;
+  width: 100%;
+}
+
+.header-info {
+  height: 100%;
+  margin-right: 1%;
+  overflow-x: hidden;
+  width: 80%;
+}
+
+.main-content {
+  flex-direction: row;
+  height: 70svh;
+  width: 100%;
+}
+.main-content,
+.dialog-container {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.aside-section {
+  flex-direction: column;
+  height: 100%;
+  justify-content: flex-start;
+  padding: 0.5%;
+  width: 35%;
+}
+.aside-section,
+.footer {
+  align-items: center;
+  border: 1.5px solid;
+  border-radius: 5px;
+  display: flex;
+  margin: 1% 0;
+}
+
+.search {
+  height: 24px;
+  outline: none;
+  padding: 1% 5%;
+  width: 83%;
+  background-color: var(--search-color);
+}
+
+.dialog-box,
+.user-list {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow-y: scroll;
+  padding: 1%;
+  width: 100%;
+}
+
+.dialog-box {
+  position: relative;
+}
+
+.user-list {
+  align-items: flex-start;
+  margin: 1%;
+}
+
+.user-list-item {
+  align-items: center;
+  border-radius: 2px;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  padding: 1% 5%;
+  width: 100%;
+}
+
+.user-status.active {
+  background: var(--user-active);
+}
+.user-status {
+  background: var(--user-inactive);
+  border: 1.5px solid;
+  border-radius: 50%;
+  height: 10px;
+  width: 10px;
+  margin: 0 5% 0 0;
+}
+
+.user-login {
+  margin: 0 2% 0 0;
+  overflow-x: hidden;
+  width: 75%;
+}
+
+.dialog-container {
+  border: 1.5px solid;
+  border-radius: 5px;
+  flex-direction: column;
+  height: 100%;
+  margin: 1% 0;
+  padding: 0.5%;
+  width: 64%;
+}
+
+.dialog-header {
+  align-items: center;
+  border-bottom: 1.5px solid;
+  display: flex;
+  flex-direction: row;
+  height: 10%;
+  justify-content: space-around;
+  margin: 0 0 1%;
+  max-height: 35px;
+  padding: 0 0.5% 0.5%;
+  width: 100%;
+}
+
+.user-text.active {
+  color: var(--user-active);
+}
+
+.user-text {
+  color: var(--user-inactive);
+}
+
+.dialog-box {
+  align-items: center;
+  height: 80%;
+  position: relative;
+}
+
+.info {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  text-align: center;
+}
+
+.dialog-input {
+  align-items: center;
+  border-top: 1.5px solid;
+
+  display: flex;
+  flex-direction: row;
+  height: 15%;
+  justify-content: space-around;
+  margin: 1% 0 0;
+  max-height: 35px;
+  padding: 0.5% 0.5% 0;
+  width: 100%;
+}
+
+.dialog-input-field {
+  height: 28px;
+  outline: none;
+  padding: 0 5%;
+  width: 70%;
+}
+
+.dialog-button.small {
+  max-width: 100px;
+}
+.dialog-button:disabled {
+  cursor: default;
+}
+
+.dialog-button {
+  height: 32px;
+  margin: 1%;
+  max-width: 200px;
+  width: 50%;
+}
+
+.footer {
+  flex-direction: row;
+  height: 10svh;
+  justify-content: space-around;
+  max-height: 55px;
+  min-height: 45px;
+  width: 100%;
+}
+
+.main {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 100svh;
+  justify-content: center;
+  margin: 0 auto;
+  min-width: 1000px;
+  width: 50svw;
+}
+
+@media screen and (max-width: 1024px) {
+  .main {
+    min-width: auto;
+    width: 95svw;
+  }
+}
+
+.message-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  margin: 1% 0;
+  width: 100%;
+}
+.message {
+  align-items: center;
+  background: var(--message);
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 1%;
+  width: 60%;
+}
+.message-header {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  font-size: 0.7rem;
+  justify-content: space-between;
+  width: 80%;
+}
+.message-header > :first-child {
+  margin-right: 10%;
+}
+.message-text {
+  background: var(--message-text);
+  border-radius: 5px;
+  margin: 2% 0 0;
+  padding: 3%;
+  text-align: justify;
+  width: 100%;
+}
+.message-footer {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  font-size: 0.7rem;
+  justify-content: space-between;
+  width: 80%;
+}
+.current {
+  align-items: flex-end;
+}
+.history-line {
+  font-size: 0.7rem;
+  position: relative;
+  text-align: center;
+  width: 100%;
+}
+.history-line:before {
+  background: var(--cancel-color);
+  border-bottom: 1.5px solid;
+  content: ' ';
+  left: 0;
+  position: absolute;
+  top: 8px;
+  width: 100%;
+}
+.history-line-text {
+  background: var(--text-alt-color);
+  margin: 1%;
+  padding: 0 5%;
+  position: relative;
+}
+.dialog-first {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  text-align: center;
+}
+
+.modal {
+  position: fixed;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  top: 0;
+  left: 0;
+  padding: 0 1rem;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+}
+
+.modal.visible {
+  display: flex;
+}
+
+.modal .result {
+  background-color: var(--text-alt-color);
+  max-width: 70rem;
+  width: 100%;
+  padding: 4rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  position: relative;
+}
+
+.greeting {
+  font-size: 2rem;
+  color: var(--text-color);
+  margin-bottom: 3rem;
+}
+
+.hidden {
+  display: none;
+}
+
+.context-menu {
+  background: var(--context-menu-bg);
+  border: 1.5px solid;
+  border-radius: 5px;
+  list-style: none;
+  margin: 0;
+  max-width: 200px;
+  padding: 1%;
+  position: absolute;
+  width: 100%;
+}
+.context-menu-item {
+  background: var(--context-menu-bg);
+  border-radius: 5px;
+  padding: 1% 5%;
+  width: 100%;
+}
+.context-menu-item:hover {
+  background: var(--context-menu-bg-hover);
+  cursor: pointer;
+}
+
+.dialog-cancel {
+  align-items: center;
+  color: var(--cancel-color);
+  display: none;
+  flex-direction: row;
+  font-size: 1rem;
+  font-weight: bold;
+  height: 14px;
+  justify-content: center;
+  position: relative;
+  right: 24px;
+  width: 14px;
+}
+.user-messages {
+  border: 1.5px solid var(--user-active);
+  border-radius: 50%;
+  font-size: 10px;
+  min-width: 15px;
+  text-align: center;
+  width: 5%;
+}
+
+.year {
+  color: var(--text-alt-color);
+  font-size: 30px;
+  font-weight: 900;
 }
