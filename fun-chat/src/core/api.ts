@@ -251,6 +251,7 @@ function clearOldMessages(box: HTMLElement): void {
   removeOldMsgs.forEach((old) => {
     old.remove();
   });
+  clearHistoryLine();
 }
 
 function createFirstGreeting(box: HTMLElement): void {
@@ -379,6 +380,31 @@ function checkForReadMessages(payload: { messages: Message[] }, userToDraw: stri
   sumOfMessages = 0;
 }
 
+function drawBody(textObj: Message, messageDiv: HTMLElement): void {
+  messageDiv.setAttribute('data-messageid', textObj.id);
+  messageDiv.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    contextMenuHandler(textObj, messageDiv);
+  });
+  const messageInDiv = createElement('div', ['message'], '', messageDiv);
+  const messageHeader = createElement('div', ['message-header'], '', messageInDiv);
+  createElement(
+    'label',
+    [],
+    `${textObj.from === CURRENT_USER ? `${CURRENT_USER} (You)` : `${textObj.from}`}`,
+    messageHeader
+  );
+  createElement('label', [], `${getMessageDate(new Date(textObj.datetime))}`, messageHeader);
+  createElement('div', ['message-text'], `${textObj.text}`, messageInDiv);
+  const messageFooter = createElement('div', ['message-footer'], '', messageInDiv);
+  drawMessageFooter(messageFooter, textObj, CURRENT_USER);
+}
+
+function clearHistoryLine(): void {
+  const prevLine = document.querySelector('.history-line');
+  if (prevLine) prevLine.remove();
+}
+
 export function drawMessages(payload: { messages: Message[] }): void {
   if (sessionStorage.sergioCurrentUser) {
     CURRENT_USER = JSON.parse(sessionStorage.sergioCurrentUser);
@@ -391,26 +417,23 @@ export function drawMessages(payload: { messages: Message[] }): void {
       createFirstGreeting(box);
     } else {
       deleteFirstGreeting();
+      let unreadFlag: boolean = false;
+      let changeFlag: boolean = false;
+      const dialFirst = document.querySelector('.dialog-first');
       payload.messages.forEach((textObj, index) => {
+        if (!unreadFlag && !changeFlag && !dialFirst) {
+          if (!textObj.status.isReaded) unreadFlag = true;
+        }
+        if (unreadFlag && !changeFlag && !dialFirst) {
+          clearHistoryLine();
+          const line = createElement('div', ['history-line'], '', box);
+          createElement('label', ['history-line-text'], 'Unread messages', line);
+          changeFlag = true;
+        }
         const side = textObj.from === CURRENT_USER ? `current` : `opponent`;
         const messageDiv = createElement('div', ['message-container', `${side}`], '', box);
-        messageDiv.setAttribute('data-messageid', textObj.id);
-        messageDiv.addEventListener('contextmenu', (e) => {
-          e.preventDefault();
-          contextMenuHandler(textObj, messageDiv);
-        });
-        const messageInDiv = createElement('div', ['message'], '', messageDiv);
-        const messageHeader = createElement('div', ['message-header'], '', messageInDiv);
-        createElement(
-          'label',
-          [],
-          `${textObj.from === CURRENT_USER ? `${CURRENT_USER} (You)` : `${textObj.from}`}`,
-          messageHeader
-        );
-        createElement('label', [], `${getMessageDate(new Date(textObj.datetime))}`, messageHeader);
-        createElement('div', ['message-text'], `${textObj.text}`, messageInDiv);
-        const messageFooter = createElement('div', ['message-footer'], '', messageInDiv);
-        drawMessageFooter(messageFooter, textObj, CURRENT_USER);
+        drawBody(textObj, messageDiv);
+
         if (index === payload.messages.length - 1 && sessionStorage.inputSended) {
           messageDiv.scrollIntoView();
           delete sessionStorage.inputSended;
