@@ -1,5 +1,5 @@
 import { createElement, generateID, getMessageDate } from './functions';
-import { ServerStatus, UserIsLogined, Message, MessageDeliver } from './types';
+import { ServerStatus, UserIsLogined, Message, MessageDeliver, MessageRead } from './types';
 
 const URLstr: string = 'ws://127.0.0.1:4000/';
 export const ws = new WebSocket(URLstr);
@@ -131,9 +131,8 @@ function wsMessageHadler(): void {
     if (type === ServerStatus.MSG_DELIVER) {
       messageDeliver(payload);
     }
-    if (type === ServerStatus.MSG_DELETE) {
-      removeDeletedMessage(payload);
-    }
+    if (type === ServerStatus.MSG_READ) messageRead(payload);
+    if (type === ServerStatus.MSG_DELETE) removeDeletedMessage(payload);
     if (type === ServerStatus.MSG_EDIT) {
       editMessage(payload);
     }
@@ -405,6 +404,27 @@ function clearHistoryLine(): void {
   if (prevLine) prevLine.remove();
 }
 
+function readMessages(): void {
+  const prevLine = document.querySelector('.history-line');
+  if (prevLine) {
+    clearHistoryLine();
+    const array = document.querySelectorAll('.message-container.opponent');
+    array.forEach((msg) => {
+      const readID = (msg as HTMLElement).dataset.messageid as string;
+      const readMsg = {
+        id: readID,
+        type: 'MSG_READ',
+        payload: {
+          message: {
+            id: readID,
+          },
+        },
+      };
+      ws.send(JSON.stringify(readMsg));
+    });
+  }
+}
+
 export function drawMessages(payload: { messages: Message[] }): void {
   if (sessionStorage.sergioCurrentUser) {
     CURRENT_USER = JSON.parse(sessionStorage.sergioCurrentUser);
@@ -439,6 +459,8 @@ export function drawMessages(payload: { messages: Message[] }): void {
           delete sessionStorage.inputSended;
         }
       });
+      box.addEventListener('scroll', readMessages);
+      box.addEventListener('click', readMessages);
     }
   }
 }
@@ -488,6 +510,18 @@ export function messageDeliver(payload: { message: MessageDeliver }): void {
       if (v.dataset.messageid === payload.message.id) {
         const status = v.querySelector('.message-read') as HTMLElement;
         status.textContent = 'delivered';
+      }
+    });
+  }
+}
+export function messageRead(payload: { message: MessageRead }): void {
+  const messagesArr = document.querySelectorAll('.message-container');
+  if (messagesArr) {
+    messagesArr.forEach((m) => {
+      const v = m as HTMLElement;
+      if (v.dataset.messageid === payload.message.id) {
+        const status = v.querySelector('.message-read') as HTMLElement;
+        status.textContent = 'read';
       }
     });
   }

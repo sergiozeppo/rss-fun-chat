@@ -92,6 +92,18 @@ export type MessageDeliver = {
   };
 };
 
+export type MessageRead = {
+  id: string;
+  type: 'MSG_READ';
+  payload: {
+    message: {
+      id: string;
+      status: {
+        isReaded: boolean;
+      };
+    };
+  };
+};
 export class ValidationError extends Error {
   constructor(message: string) {
     super(message);
