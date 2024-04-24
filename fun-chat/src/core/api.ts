@@ -102,13 +102,20 @@ function editMessage(payload: {
   });
 }
 
+function loginHandler(): void {
+  const user = {
+    login: JSON.parse(sessionStorage.sergioCurrentUser),
+    password: JSON.parse(sessionStorage.sergioPassword),
+  };
+  sessionStorage.setItem('sergioUser', JSON.stringify(user));
+  window.location.hash = '#main';
+}
+
 function wsMessageHadler(): void {
   ws.onmessage = (event): void => {
     const gdata = JSON.parse(event.data);
     const { payload, type } = gdata;
-    if (type === ServerStatus.USER_LOGIN) {
-      window.location.hash = '#main';
-    }
+    if (type === ServerStatus.USER_LOGIN) loginHandler();
     if (type === ServerStatus.USER_ACTIVE) {
       retrieveActiveUsers(payload);
     }
@@ -123,7 +130,7 @@ function wsMessageHadler(): void {
     }
     if (type === ServerStatus.MSG_FROM_USER) {
       drawMessages(payload);
-      checkForReadMessages(payload, sessionStorage.SergioAside);
+      checkForReadMessages(payload, sessionStorage.sergioAside);
     }
     if (type === ServerStatus.MSG_SEND) {
       appendMessage(payload);
@@ -319,7 +326,7 @@ function editMessageSend(textObj: Message, input: HTMLInputElement): void {
 
 function contextMenuHandler(textObj: Message, box: HTMLElement): void {
   deletePrevMenu();
-  if (textObj.from === sessionStorage.sergioCurrentUser) {
+  if (textObj.from === JSON.parse(sessionStorage.sergioCurrentUser)) {
     const contextMenu = createElement('ul', ['context-menu'], '', box);
     const editButton = createElement('li', ['context-menu-item', 'edit'], 'Edit', contextMenu);
     const deleteButton = createElement(
@@ -339,6 +346,8 @@ function contextMenuHandler(textObj: Message, box: HTMLElement): void {
       cancelButton.style.display = 'flex';
       cancelButton.addEventListener('click', () => {
         cancelEdit(editFieldInput, cancelButton);
+        sendButton.style.display = 'block';
+        sendEditText.style.display = 'none';
       });
       sendEditText.addEventListener('click', () => {
         editMessageSend(textObj, editFieldInput);
@@ -568,7 +577,7 @@ export function fetchMessages(userToFetch: string): void {
       },
     },
   };
-  sessionStorage.setItem('SergioAside', JSON.stringify(userToFetch));
+  sessionStorage.setItem('sergioAside', JSON.stringify(userToFetch));
   ws.send(JSON.stringify(fetchMessage));
 }
 

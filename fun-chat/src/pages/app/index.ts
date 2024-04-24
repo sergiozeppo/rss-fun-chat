@@ -170,6 +170,7 @@ function buttonListenersSetup(
   button.addEventListener('click', () => {
     logout();
     deleteItems();
+    // delete sessionStorage.
     window.location.hash = '#login';
     navigate();
   });
@@ -246,25 +247,23 @@ function aboutPage(): void {
 
 form.addEventListener('submit', (e): void => {
   e.preventDefault();
-  const user = {
-    login: loginInput.value,
-    password: passwordInput.value,
-  };
-  sessionStorage.setItem('sergioUser', JSON.stringify(user));
+
+  const reqID = generateID();
+  // sessionStorage.setItem('sergioUser', JSON.stringify(user));
   sessionStorage.setItem('sergioCurrentUser', JSON.stringify(loginInput.value));
   if (!sessionStorage.sergioLoginState) sessionStorage.setItem('sergioLoginState', 'true');
-  const reqID = generateID();
   const msg = {
     id: reqID,
     type: ServerStatus.USER_LOGIN,
     payload: {
       user: {
-        login: user.login,
-        password: user.password,
+        login: loginInput.value,
+        password: passwordInput.value,
       },
     },
   };
   ws.send(JSON.stringify(msg));
+  sessionStorage.setItem('sergioPassword', JSON.stringify(passwordInput.value));
   ws.send(JSON.stringify(usersActive));
   ws.send(JSON.stringify(usersInActive));
   console.log(ws.readyState);
@@ -289,6 +288,10 @@ function logout(): void {
     ws.send(JSON.stringify(delMessage));
   }
   delete sessionStorage.sergioUser;
+  delete sessionStorage.sergioCurrentUser;
+  delete sessionStorage.sergioLoginState;
+  delete sessionStorage.sergioAside;
+  delete sessionStorage.sergioOpponent;
 }
 export function navigate(): void {
   if (window.location.hash === '#login') {
