@@ -136,13 +136,13 @@ export function mainPage(): void {
   const filterInput = createElement('input', ['search'], '', userAsideBlock) as HTMLInputElement;
   filterInput.placeholder = 'Search user...';
   filterInput.addEventListener('keyup', searchUser);
-  const userList = createElement('ul', ['user-list'], '', userAsideBlock);
+  createElement('ul', ['user-list'], '', userAsideBlock);
 
   const dialogBlock = createElement('article', ['dialog-container'], '', content);
   const dialogHeader = createElement('article', ['dialog-header'], '', dialogBlock);
-  const opponent = createElement('label', ['opponent-login'], '', dialogHeader);
-  const userStatusText = createElement('label', ['user-text'], '', dialogHeader);
-  const dialogBox = createElement('article', ['dialog-box'], '', dialogBlock);
+  createElement('label', ['opponent-login'], '', dialogHeader);
+  createElement('label', ['user-text'], '', dialogHeader);
+  createElement('article', ['dialog-box'], '', dialogBlock);
   const dialogForm = createElement('form', ['dialog-input'], '', dialogBlock);
   const dialogInput = createElement('input', ['dialog-input-field'], '', dialogForm);
   (dialogInput as HTMLInputElement).placeholder = 'Type your message...';
@@ -150,8 +150,6 @@ export function mainPage(): void {
   const dialogButton = createElement('button', ['dialog-button'], 'Send', dialogForm);
   (dialogInput as HTMLInputElement).disabled = true;
   (dialogButton as HTMLButtonElement).disabled = true;
-  console.log(userInfo, logoutButton, filterInput);
-  console.log(dialogBox, userList, opponent, userStatusText);
   drawFooter(main);
 
   infoButton2.href = '#about';
@@ -196,7 +194,6 @@ function sendText(): void {
           },
         },
       };
-      console.log(sendMessage);
       ws.send(JSON.stringify(sendMessage));
       sessionStorage.setItem('inputSended', JSON.stringify(true));
       dialogInpitToText.value = '';
@@ -238,7 +235,6 @@ function aboutPage(): void {
   }
   back.addEventListener('click', () => {
     deleteItems();
-    console.log('Connection established');
     ws.send(JSON.stringify(usersActive));
     ws.send(JSON.stringify(usersInActive));
   });
@@ -266,13 +262,11 @@ form.addEventListener('submit', (e): void => {
   sessionStorage.setItem('sergioPassword', JSON.stringify(passwordInput.value));
   ws.send(JSON.stringify(usersActive));
   ws.send(JSON.stringify(usersInActive));
-  console.log(ws.readyState);
 });
 
 function logout(): void {
   if (sessionStorage.sergioUser) {
     const delUser: User = JSON.parse(sessionStorage.sergioUser);
-    console.log(delUser);
     const logoutID = generateID();
     const delMessage = {
       id: logoutID,
@@ -284,7 +278,6 @@ function logout(): void {
         },
       },
     };
-    console.log(delMessage);
     ws.send(JSON.stringify(delMessage));
   }
   delete sessionStorage.sergioUser;

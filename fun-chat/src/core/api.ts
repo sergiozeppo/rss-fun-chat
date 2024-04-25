@@ -156,22 +156,15 @@ window.onload = (): void => {
 function connect(): void {
   ws.onopen = (): void => {
     autoLogin();
-    console.log('Connection established');
   };
   wsMessageHadler();
   ws.onerror = (error): void => {
     if (error instanceof Error) {
-      console.log(error.message);
+      console.warn(error);
     }
   };
-  ws.onclose = (event): void => {
-    if (event.wasClean) {
-      console.log('Connection closed cleanly');
-    } else {
-      console.log('Connection died');
-    }
+  ws.onclose = (): void => {
     setInterval(() => {
-      console.log('Trying to reconnect...');
       connect();
       autoLogin();
     }, 3000);
@@ -222,7 +215,6 @@ export function appendExternalUsers(payload: { user: UserIsLogined }): void {
       const userItem = payload.user;
       const ul = document.querySelector('.user-list') as HTMLElement;
       const oldUserAppend = ul.querySelector(`li[data-login=${userItem.login}]`) as HTMLElement;
-      console.log(oldUserAppend);
       oldUserAppend?.remove();
       const ifOpp = document.querySelector(`article[data-opp=${userItem.login}]`);
 
